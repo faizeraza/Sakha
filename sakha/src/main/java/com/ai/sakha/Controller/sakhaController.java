@@ -1,4 +1,5 @@
 package com.ai.sakha.Controller;
+import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -89,6 +90,17 @@ public ResponseEntity<String> updateTaskField(@PathVariable Long id,
     public ResponseEntity<List<Task>> searchTasks(@RequestParam String query) {
         List<Task> tasks = taskService.searchTasks(query);
         return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/execute")
+    public ResponseEntity<String> executeCommand(@RequestParam String taskname) {
+        Task task = taskService.getTask(taskname);
+        try {
+            Process process = Runtime.getRuntime().exec(task.getDescription());
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("An error occurred");
+        }
+        return ResponseEntity.ok("Successfully executed command");
     }
 }
 

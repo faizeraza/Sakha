@@ -1,6 +1,4 @@
 package com.ai.sakha.Sevices;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,8 +29,8 @@ public class TaskServices{
                 switch (fieldName) {
                 case "name" -> taskToUpdate.setTaskname(newValue);
                 case "description" -> taskToUpdate.setDescription(newValue);
-                case "date" -> taskToUpdate.setScheduleDate(LocalDate.parse(newValue));
-                case "time" -> taskToUpdate.setScheduleTime(LocalTime.parse(newValue));
+                case "date" -> taskToUpdate.setScheduleDate(newValue);
+                case "time" -> taskToUpdate.setScheduleTime(newValue);
                 case "status" -> taskToUpdate.setStatus(Boolean.parseBoolean(newValue));
                 default -> {
                     // return ResponseEntity.badRequest().body("Invalid field name");

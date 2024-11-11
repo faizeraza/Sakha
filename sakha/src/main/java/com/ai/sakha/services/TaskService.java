@@ -1,4 +1,5 @@
 package com.ai.sakha.services;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +10,7 @@ import com.ai.sakha.entities.Task;
 import com.ai.sakha.repositories.TaskRepository;
 
 @Service
-public class TaskService{
+public class TaskService {
 
     @Autowired
     private TaskRepository taskRepository;
@@ -26,27 +27,28 @@ public class TaskService{
         return taskRepository.findAll();
     }
 
-        public Task updaTask(Long id, String newValue, String fieldName) {
-            Optional<Task> optionalTask = this.taskRepository.findById(id);
-            if (optionalTask.isPresent()) {
-                Task taskToUpdate = optionalTask.get();
-                switch (fieldName) {
-                case "name" -> taskToUpdate.setTaskname(newValue);
-                case "description" -> taskToUpdate.setDescription(newValue);
-                
+    public Task updaTask(Long id, String newValue, String fieldName) {
+        Optional<Task> optionalTask = this.taskRepository.findById(id);
+        if (optionalTask.isPresent()) {
+            Task taskToUpdate = optionalTask.get();
+            switch (fieldName) {
+                case "name" ->
+                    taskToUpdate.setTaskname(newValue);
+                case "command" ->
+                    taskToUpdate.setCommand(newValue);
+
                 default -> {
                     // return ResponseEntity.badRequest().body("Invalid field name");
                 }
             }
-                
-                // Save the updated task
-                return taskRepository.save(taskToUpdate);
-            } else {
-                throw new RuntimeException("Task not found");
-            }
-        }
 
-  
+            // Save the updated task
+            return taskRepository.save(taskToUpdate);
+        } else {
+            throw new RuntimeException("Task not found");
+        }
+    }
+
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
@@ -61,12 +63,7 @@ public class TaskService{
         return (List<Task>) taskRepository.findByTaskname(query);
     }
 
-
-
-
-
     // Update task New Chnages 
-
     public Optional<Task> findTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -75,4 +72,3 @@ public class TaskService{
         taskRepository.save(task);  // Save the task to the database
     }
 }
-

@@ -1,4 +1,5 @@
 package com.ai.sakha.controllers;
+
 import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.ai.sakha.entities.Task;
 import com.ai.sakha.services.TaskService;
 
-
 @Controller
 @RequestMapping("/tasks")
 public class SakhaController {
@@ -34,7 +34,6 @@ public class SakhaController {
         return "base";  // This refetasksrs to home.html in the templates folder
     }
 
-
     @RequestMapping("/home")
     public String home(Model model) {
         List<Task> taskList = taskService.getAllTasks();  // Fetch tasks from service
@@ -42,7 +41,6 @@ public class SakhaController {
         model.addAttribute("task", new Task());  // Add empty tasks object for form binding
         return "home";  // This will render the home.html template
     }
-    
 
     // 1. Create a new task
     @PostMapping("/create")
@@ -60,23 +58,23 @@ public class SakhaController {
 
     // Updates PutMaping Controller
     @PutMapping("/update/{id}")
-public ResponseEntity<String> updateTaskField(@PathVariable Long id, 
-                                              @RequestParam String fieldName, 
-                                              @RequestParam String newValue) {
-    try {
-        // Prepare the updated task object
-        Task updatedTask = new Task();
-        updatedTask.setId(id);  // Set the ID of the task to update
-        // Call the service method to update the task
-        taskService.updaTask(id, newValue, fieldName.toLowerCase());
+    public ResponseEntity<String> updateTaskField(@PathVariable Long id,
+            @RequestParam String fieldName,
+            @RequestParam String newValue) {
+        try {
+            // Prepare the updated task object
+            Task updatedTask = new Task();
+            updatedTask.setId(id);  // Set the ID of the task to update
+            // Call the service method to update the task
+            taskService.updaTask(id, newValue, fieldName.toLowerCase());
 
-        return ResponseEntity.ok("Task updated successfully!");
-    } catch (DateTimeParseException e) {
-        return ResponseEntity.badRequest().body("Invalid date or time format");
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating task");
+            return ResponseEntity.ok("Task updated successfully!");
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body("Invalid date or time format");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating task");
+        }
     }
-}
 
     // 5. Mark task as complete/incomplete
     @PutMapping("/status/{id}")
@@ -96,11 +94,10 @@ public ResponseEntity<String> updateTaskField(@PathVariable Long id,
     public ResponseEntity<String> executeCommand(@RequestParam String taskname) {
         Task task = taskService.getTask(taskname);
         try {
-            Process process = Runtime.getRuntime().exec(task.getDescription());
+            Runtime.getRuntime().exec(task.getCommand());
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("An error occurred");
         }
         return ResponseEntity.ok("Successfully executed command");
     }
 }
-

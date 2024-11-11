@@ -1,6 +1,8 @@
 package com.ai.sakha.controllers;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,21 +85,25 @@ public class TaskController {
     //     Task task = taskService.updateTaskStatus(id, completed);
     //     return ResponseEntity.ok(task);
     // }
-
     // 6. Search for tasks
     // @GetMapping("/search")  // Changed to GET
     // public ResponseEntity<List<Task>> searchTasks(@RequestParam String query) {
     //     List<Task> tasks = taskService.searchTasks(query);
     //     return ResponseEntity.ok(tasks);
     // }
-
     @GetMapping("/execute")
     public ResponseEntity<String> executeCommand(@RequestParam String taskname) {
-        try {
-            taskService.execute(taskname);
+        try (BufferedInputStream bis = new BufferedInputStream(taskService.execute(taskname).getInputStream())) {
+            byte buffer[] = new byte[1024];
+            int bytes;
+            while ((bytes = bis.read(buffer)) != -1) {
+
+            }
+            String results = new String(buffer, StandardCharsets.UTF_8);
+            return ResponseEntity.ok().body(results.trim());
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("An error occurred");
+            return ResponseEntity.internalServerError().body(e.toString());
         }
-        return ResponseEntity.ok("Successfully executed command");
+        // return ResponseEntity.ok("Successfully executed command");
     }
 }

@@ -19,38 +19,27 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task getTask(String task) {
-        return taskRepository.findByTaskname(task);
+    public Task getTask(String name) {
+        return taskRepository.findByTaskname(name);
     }
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
-    public Task updaTask(Long id, String newValue, String fieldName) {
-        Optional<Task> optionalTask = this.taskRepository.findById(id);
+    public Task updateTask(Task task) {
+        Optional<Task> optionalTask = Optional.ofNullable(this.taskRepository.findByTaskname(task.getTaskname()));
         if (optionalTask.isPresent()) {
             Task taskToUpdate = optionalTask.get();
-            switch (fieldName) {
-                case "name" ->
-                    taskToUpdate.setTaskname(newValue);
-                case "command" ->
-                    taskToUpdate.setCommand(newValue);
-
-                default -> {
-                    // return ResponseEntity.badRequest().body("Invalid field name");
-                }
-            }
-
-            // Save the updated task
-            return taskRepository.save(taskToUpdate);
+            task.setId(taskToUpdate.getId());
+            return taskRepository.save(task);
         } else {
             throw new RuntimeException("Task not found");
         }
     }
 
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+    public Task deleteTask(String name) {
+        return taskRepository.deleteByTaskname(name);
     }
 
     public Task updateTaskStatus(Long id, boolean completed) {

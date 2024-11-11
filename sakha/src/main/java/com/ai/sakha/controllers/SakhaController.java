@@ -1,7 +1,6 @@
 package com.ai.sakha.controllers;
 
 import java.io.IOException;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,20 +56,13 @@ public class SakhaController {
     }
 
     // Updates PutMaping Controller
-    @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateTaskField(@PathVariable Long id,
-            @RequestParam String fieldName,
-            @RequestParam String newValue) {
+    @PutMapping("/update")
+    public ResponseEntity<String> updateTaskField(@RequestBody Task task) {
         try {
-            // Prepare the updated task object
-            Task updatedTask = new Task();
-            updatedTask.setId(id);  // Set the ID of the task to update
             // Call the service method to update the task
-            taskService.updaTask(id, newValue, fieldName.toLowerCase());
+            String taskname = taskService.updateTask(task).getTaskname();
 
-            return ResponseEntity.ok("Task updated successfully!");
-        } catch (DateTimeParseException e) {
-            return ResponseEntity.badRequest().body("Invalid date or time format");
+            return ResponseEntity.ok("Task " + taskname + " updated successfully!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating task");
         }

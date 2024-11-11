@@ -10,18 +10,20 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+
 @Data
 @Entity
 @Table(name = "scheduledtask")
 public class ScheduledTask {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="taskid")
+    @JoinColumn(name = "taskid")
     private Task task;
-    
+
     private LocalDateTime scheduleDateTime;
-    private boolean status;
+    private Boolean status;
 }

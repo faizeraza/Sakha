@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ai.sakha.entities.ScheduledTask;
+import com.ai.sakha.entities.ScheduledTaskDTO;
 import com.ai.sakha.repositories.ScheduledTaskRepository;
 
 @Service
@@ -81,11 +82,12 @@ public class ScheduledTaskService {
                 second, minute, hour, dayOfMonth, month, dateTime.getYear());
     }
 
-    public void addCronJob(String taskname, LocalDateTime dateTime) throws IOException, InterruptedException {
-
+    public void addCronJob(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+        String taskname = scheduledTaskDTO.getTaskname();
+        LocalDateTime dateTime = scheduledTaskDTO.getDateTime();
         String command = taskService.getTask(taskname).getCommand();
         String schedule = generateCronExpression(dateTime);
-        String cronJob = "0 5 * * 1" + " " + command;
+        String cronJob = schedule + " " + command;
         String crontabFilePath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/crontabList";
 
         ProcessBuilder getCrontab = new ProcessBuilder("bash", "-c", "crontab -l > " + crontabFilePath);
@@ -93,6 +95,9 @@ public class ScheduledTaskService {
         getCrontabProcess.waitFor();
         Files.write(Paths.get(crontabFilePath), (cronJob + "\n").getBytes(), StandardOpenOption.APPEND);
         ProcessBuilder setCrontab = new ProcessBuilder("bash", "-c", "crontab " + crontabFilePath);
-        setCrontab.start();
+        Process setCrontabProcess = setCrontab.start();
+
+        setCrontabProcess.waitFor();
+        // Files.deleteIfExists(Paths.get(tempCrontabFilePath));
     }
 }

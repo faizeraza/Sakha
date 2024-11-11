@@ -1,7 +1,6 @@
 package com.ai.sakha.controllers;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ai.sakha.dtoMapper.ScheduledTaskDtoMapper;
@@ -65,8 +63,8 @@ public class ScheduledTaskController {
     }
 
     @GetMapping("/execute")
-    public ResponseEntity<?> run(@RequestParam String taskname) throws IOException, InterruptedException {
-        scheduledTaskService.addCronJob(taskname, LocalDateTime.now());
+    public ResponseEntity<?> run(@RequestBody ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+        scheduledTaskService.addCronJob(scheduledTaskDTO);
         return ResponseEntity.ok("done broo");
     }
 }

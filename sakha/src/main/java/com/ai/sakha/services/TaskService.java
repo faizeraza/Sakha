@@ -1,5 +1,6 @@
 package com.ai.sakha.services;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,15 +43,17 @@ public class TaskService {
         return taskRepository.deleteByTaskname(name);
     }
 
-    public Task updateTaskStatus(Long id, boolean completed) {
-        Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
-        return taskRepository.save(task);
-    }
+    // TO BE DELETED
 
-    @SuppressWarnings("unchecked")
-    public List<Task> searchTasks(String query) {
-        return (List<Task>) taskRepository.findByTaskname(query);
-    }
+    // public Task updateTaskStatus(Long id, boolean completed) {
+    //     Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
+    //     return taskRepository.save(task);
+    // }
+
+    // @SuppressWarnings("unchecked")
+    // public List<Task> searchTasks(String query) {
+    //     return (List<Task>) taskRepository.findByTaskname(query);
+    // }
 
     // Update task New Chnages 
     public Optional<Task> findTaskById(Long id) {
@@ -59,5 +62,10 @@ public class TaskService {
 
     public void saveTask(Task task) {
         taskRepository.save(task);  // Save the task to the database
+    }
+
+    public Process execute(String taskname) throws IOException {
+        Task task = this.getTask(taskname);
+        return new ProcessBuilder(task.getCommand()).start();
     }
 }

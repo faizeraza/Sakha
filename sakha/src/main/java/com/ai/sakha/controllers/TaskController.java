@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +20,7 @@ import com.ai.sakha.services.TaskService;
 
 @Controller
 @RequestMapping("/tasks")
-public class SakhaController {
+public class TaskController {
 
     @Autowired
     private TaskService taskService;
@@ -68,25 +67,25 @@ public class SakhaController {
         }
     }
 
+    // TO BE DELETED
     // 5. Mark task as complete/incomplete
-    @PutMapping("/status/{id}")
-    public ResponseEntity<Task> changeTaskStatus(@PathVariable Long id, @RequestParam boolean completed) {
-        Task task = taskService.updateTaskStatus(id, completed);
-        return ResponseEntity.ok(task);
-    }
+    // @PutMapping("/status/{id}")
+    // public ResponseEntity<Task> changeTaskStatus(@PathVariable Long id, @RequestParam boolean completed) {
+    //     Task task = taskService.updateTaskStatus(id, completed);
+    //     return ResponseEntity.ok(task);
+    // }
 
     // 6. Search for tasks
-    @GetMapping("/search")  // Changed to GET
-    public ResponseEntity<List<Task>> searchTasks(@RequestParam String query) {
-        List<Task> tasks = taskService.searchTasks(query);
-        return ResponseEntity.ok(tasks);
-    }
+    // @GetMapping("/search")  // Changed to GET
+    // public ResponseEntity<List<Task>> searchTasks(@RequestParam String query) {
+    //     List<Task> tasks = taskService.searchTasks(query);
+    //     return ResponseEntity.ok(tasks);
+    // }
 
     @GetMapping("/execute")
     public ResponseEntity<String> executeCommand(@RequestParam String taskname) {
-        Task task = taskService.getTask(taskname);
         try {
-            Runtime.getRuntime().exec(task.getCommand());
+            taskService.execute(taskname);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("An error occurred");
         }

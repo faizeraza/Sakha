@@ -15,6 +15,9 @@ public class ScheduledTaskService {
     @Autowired
     private ScheduledTaskRepository scheduledTaskRepository;
 
+    @Autowired
+    private TaskService taskService;
+
     public Collection<ScheduledTask> getAll() {
         return scheduledTaskRepository.findAll();
     }
@@ -28,10 +31,7 @@ public class ScheduledTaskService {
     }
 
     public ScheduledTask createScheduledTask(ScheduledTask scheduledTask) {
-        Optional<ScheduledTask> scheduleTaskOpt = scheduledTaskRepository.findById(scheduledTask.getId());
-        if (scheduleTaskOpt.isPresent())
-            throw new RuntimeException("Scheduled task with id " + scheduledTask.getId() + " already present");
-
+        scheduledTask.setTask(taskService.findTaskById(scheduledTask.getTask().getId()).orElseThrow());
         return scheduledTaskRepository.save(scheduledTask);
     }
 
@@ -39,7 +39,7 @@ public class ScheduledTaskService {
         Optional<ScheduledTask> scheduleTaskOpt = scheduledTaskRepository.findById(otherScheduledTask.getId());
         if (scheduleTaskOpt.isPresent()) {
             ScheduledTask scheduledTask = scheduleTaskOpt.get();
-            scheduledTask.setTask(otherScheduledTask.getTask());
+            scheduledTask.setTask(taskService.findTaskById(otherScheduledTask.getTask().getId()).orElseThrow());
             scheduledTask.setScheduleDateTime(otherScheduledTask.getScheduleDateTime());
             scheduledTask.setStatus(otherScheduledTask.getStatus());
 

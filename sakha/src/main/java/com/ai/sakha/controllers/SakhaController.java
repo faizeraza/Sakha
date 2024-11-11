@@ -1,4 +1,4 @@
-package com.ai.sakha.Controller;
+package com.ai.sakha.controllers;
 import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -16,16 +16,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.ai.sakha.Entity.Task;
-import com.ai.sakha.Sevices.TaskServices;
+import com.ai.sakha.entities.Task;
+import com.ai.sakha.services.TaskService;
 
 
 @Controller
 @RequestMapping("/tasks")
-public class sakhaController {
+public class SakhaController {
 
     @Autowired
-    private TaskServices taskService;
+    private TaskService taskService;
 
     // this is testing routew
     @GetMapping("/basic")

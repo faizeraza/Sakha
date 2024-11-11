@@ -1,15 +1,15 @@
-package com.ai.sakha.Sevices;
+package com.ai.sakha.services;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ai.sakha.Entity.Task;
-import com.ai.sakha.Repository.TaskRepository;
+import com.ai.sakha.entities.Task;
+import com.ai.sakha.repositories.TaskRepository;
 
 @Service
-public class TaskServices{
+public class TaskService{
 
     @Autowired
     private TaskRepository taskRepository;

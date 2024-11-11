@@ -33,9 +33,7 @@ public class TaskService{
                 switch (fieldName) {
                 case "name" -> taskToUpdate.setTaskname(newValue);
                 case "description" -> taskToUpdate.setDescription(newValue);
-                case "date" -> taskToUpdate.setScheduleDate(newValue);
-                case "time" -> taskToUpdate.setScheduleTime(newValue);
-                case "status" -> taskToUpdate.setStatus(Boolean.parseBoolean(newValue));
+                
                 default -> {
                     // return ResponseEntity.badRequest().body("Invalid field name");
                 }

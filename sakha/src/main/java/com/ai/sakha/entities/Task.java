@@ -16,10 +16,9 @@ public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String taskname,description;
-    private String scheduleTime;
-    private String scheduleDate;
-    private boolean status;
+
+    private String taskname;
+    private String description;
     
     @Override
     public String toString() {
@@ -28,9 +27,6 @@ public class Task {
         sb.append("id=").append(id);
         sb.append(", taskname=").append(taskname);
         sb.append(", description=").append(description);
-        sb.append(", scheduleTime=").append(scheduleTime);
-        sb.append(", scheduleDate=").append(scheduleDate);
-        sb.append(", status=").append(status);
         sb.append('}');
         return sb.toString();
     }

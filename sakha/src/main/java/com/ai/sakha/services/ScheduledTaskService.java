@@ -1,5 +1,9 @@
 package com.ai.sakha.services;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -25,8 +29,9 @@ public class ScheduledTaskService {
 
     public ScheduledTask getById(Long id) {
         Optional<ScheduledTask> scheduleTaskOpt = scheduledTaskRepository.findById(id);
-        if (scheduleTaskOpt.isPresent())
+        if (scheduleTaskOpt.isPresent()) {
             return scheduleTaskOpt.get();
+        }
 
         throw new RuntimeException("Scheduled task with id " + id + " not found");
     }
@@ -60,7 +65,7 @@ public class ScheduledTaskService {
         throw new RuntimeException("Scheduled task with id " + id + " not found");
     }
 
-    public String generateCronExpression(LocalDateTime dateTime) {
+    public static String generateCronExpression(LocalDateTime dateTime) {
         if (dateTime.isBefore(LocalDateTime.now())) {
             return null; // If the date is in the past, skip scheduling
         }
@@ -74,5 +79,20 @@ public class ScheduledTaskService {
         // Convert to cron format: "second minute hour day month ? year"
         return String.format("%d %d %d %d %d ? %d",
                 second, minute, hour, dayOfMonth, month, dateTime.getYear());
+    }
+
+    public void addCronJob(String taskname, LocalDateTime dateTime) throws IOException, InterruptedException {
+
+        String command = taskService.getTask(taskname).getCommand();
+        String schedule = generateCronExpression(dateTime);
+        String cronJob = "0 5 * * 1" + " " + command;
+        String crontabFilePath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/crontabList";
+
+        ProcessBuilder getCrontab = new ProcessBuilder("bash", "-c", "crontab -l > " + crontabFilePath);
+        Process getCrontabProcess = getCrontab.start();
+        getCrontabProcess.waitFor();
+        Files.write(Paths.get(crontabFilePath), (cronJob + "\n").getBytes(), StandardOpenOption.APPEND);
+        ProcessBuilder setCrontab = new ProcessBuilder("bash", "-c", "crontab " + crontabFilePath);
+        setCrontab.start();
     }
 }

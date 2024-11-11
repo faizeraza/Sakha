@@ -44,17 +44,14 @@ public class TaskService {
     }
 
     // TO BE DELETED
-
     // public Task updateTaskStatus(Long id, boolean completed) {
     //     Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
     //     return taskRepository.save(task);
     // }
-
     // @SuppressWarnings("unchecked")
     // public List<Task> searchTasks(String query) {
     //     return (List<Task>) taskRepository.findByTaskname(query);
     // }
-
     // Update task New Chnages 
     public Optional<Task> findTaskById(Long id) {
         return taskRepository.findById(id);
@@ -66,6 +63,7 @@ public class TaskService {
 
     public Process execute(String taskname) throws IOException {
         Task task = this.getTask(taskname);
-        return new ProcessBuilder(task.getCommand()).start();
+        return new ProcessBuilder(
+                task.getCommand().split(" ")).start();
     }
 }

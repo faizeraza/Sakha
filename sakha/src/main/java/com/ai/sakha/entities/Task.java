@@ -21,6 +21,8 @@ public class Task {
 
     private String taskname;
     private String command;
+    private String description;
+
 
     @Override
     public String toString() {
@@ -28,7 +30,8 @@ public class Task {
         sb.append("Task{");
         sb.append("id=").append(id);
         sb.append(", taskname=").append(taskname);
-        sb.append(", description=").append(command);
+        sb.append(", command=").append(command);
+        sb.append(", description=").append(description);
         sb.append('}');
         return sb.toString();
     }

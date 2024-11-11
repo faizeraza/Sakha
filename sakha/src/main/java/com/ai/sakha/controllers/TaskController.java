@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,7 +26,7 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-    // this is testing routew
+    // this is testing route
     @GetMapping("/basic")
     public String base(Model model) {
         model.addAttribute("message", "Hello, Thymeleaf!");
@@ -67,7 +68,15 @@ public class TaskController {
         }
     }
 
-    // TO BE DELETED
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteTask(Long id) 
+    {
+        
+        taskService.deleteTask(id);
+        return ResponseEntity.ok("Task Id :- " + id + " Deleted successfully!");
+
+    }
+        // TO BE DELETED
     // 5. Mark task as complete/incomplete
     // @PutMapping("/status/{id}")
     // public ResponseEntity<Task> changeTaskStatus(@PathVariable Long id, @RequestParam boolean completed) {

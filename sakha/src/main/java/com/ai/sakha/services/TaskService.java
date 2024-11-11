@@ -39,8 +39,8 @@ public class TaskService {
         }
     }
 
-    public Task deleteTask(String name) {
-        return taskRepository.deleteByTaskname(name);
+    public void deleteTask(Long id) {
+        taskRepository.deleteById(id);
     }
 
     // TO BE DELETED

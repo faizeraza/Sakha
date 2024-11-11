@@ -1,5 +1,7 @@
 package com.ai.sakha.entities;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,11 +17,11 @@ public class ScheduledTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne
     @JoinColumn(name="taskid")
     private Task task;
     
-    private String scheduleTime;
-    private String scheduleDate; 
+    private LocalDateTime scheduleDateTime;
     private boolean status;
 }

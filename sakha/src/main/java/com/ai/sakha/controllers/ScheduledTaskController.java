@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ai.sakha.dtoMapper.ScheduledTaskDtoMapper;
 import com.ai.sakha.entities.ScheduledTask;
+import com.ai.sakha.entities.ScheduledTaskDTO;
 import com.ai.sakha.services.ScheduledTaskService;
 
 @RestController
@@ -23,9 +25,20 @@ public class ScheduledTaskController {
     @Autowired
     private ScheduledTaskService scheduledTaskService;
 
+    @Autowired
+    ScheduledTaskDtoMapper mapper;
+
     @GetMapping("/get")
     public ResponseEntity<Collection<ScheduledTask>> getAllScheduledTasks() {
         return ResponseEntity.ok(scheduledTaskService.getAll());
+    }
+
+    @GetMapping("/getdto/{id}")
+    public ResponseEntity<ScheduledTaskDTO> getScheduledTaskDto(@PathVariable Long id) {
+        //return ResponseEntity.ok(scheduledTaskService.getById(id));
+        ScheduledTask t = scheduledTaskService.getById(id);
+        ScheduledTaskDTO dto = mapper.toDTO(t);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/get/{id}")

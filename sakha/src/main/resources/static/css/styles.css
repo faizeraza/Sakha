@@ -1,0 +1,13 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+
+.grid-item {
+    text-align: center;
+    padding: 1rem;
+}
+
+.btn {
+    margin: 5px;
+}

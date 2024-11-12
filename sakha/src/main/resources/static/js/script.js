@@ -1,6 +1,6 @@
 const chatBox = document.getElementById('chatBox');
 let conversationStep = 0;
-let taskid,fieldName, newValue;
+let taskid, fieldName, newValue;
 let task = {
     taskname: '',
     description: '',
@@ -18,7 +18,7 @@ inputBox.addEventListener("keypress", () => {
     }
 })
 
-// Updated Changes
+// Updated Changes 
 function appendMessage(content, isUser) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('chat-message', isUser ? 'user' : 'bot');
@@ -67,9 +67,6 @@ function handleBotResponse(userMessage) {
             } else if (userMessage === '4') {
                 appendMessage('Please provide the task Id to delete:', false);
                 conversationStep = 20; // Move to delete flow
-            } else if (userMessage === '5') {
-                  appendMessage('Please provide the task Id to execute:', false);
-                  conversationStep = 21;
             } else {
                 appendMessage('Sorry, I did not understand that. Please select an option (1-4).', false);
             }
@@ -138,7 +135,7 @@ function handleBotResponse(userMessage) {
         case 12:
             fieldName = userMessage;
             appendMessage('Enter the updated Value :- ', false);
-            // updateTaskField(id,fieldName,newValue);
+            // updateTaskField(id,fieldName,newValue); 
             conversationStep = 13;
             // Now call the update function with the completed task data
             break;
@@ -147,8 +144,8 @@ function handleBotResponse(userMessage) {
             newValue = userMessage; // Save the description provided by the user
             console.log(newValue);
             appendMessage(fieldName + ' Updated. Proceeding with task update...', false);
-            updateTask(taskid,fieldName,newValue);
-        break;
+            updateTask(taskid, fieldName, newValue);
+            break;
         // Task deletion steps
         case 20:
             task.taskname = userMessage;
@@ -165,23 +162,6 @@ function handleBotResponse(userMessage) {
                 conversationStep = 0; // Reset for next operation
             }
             break;
-
-        case 22:
-            task.taskname = userMessage;
-            appendMessage(`Are you sure you want to execute the task: ${userMessage}? (yes/no)`, false);
-            conversationStep = 23; // Move to task deletion confirmation
-            break;
-
-        case 23:
-            if (userMessage.toLowerCase() === 'yes') {
-                execute(task.taskname); // Call function to delete the task
-            } else {
-                appendMessage('Task execution cancelled.', false);
-                displayOptions(); // Show options again
-                conversationStep = 0; // Reset for next operation
-            }
-            break;
-
 
         default:
             appendMessage('Sorry, something went wrong.', false);
@@ -233,27 +213,27 @@ function listTasks() {
             } else {
                 // Create a table element with improved styles
                 let table = `<table style="width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 1em; font-family: Arial, sans-serif; box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);">
-                            <thead>
-                                <tr style="background-color: #007BFF; color: white; text-align: left;">
-                                    <th style="padding: 10px;">ID</th>
-                                    <th style="padding: 10px;">Task Name</th>
-                                    <th style="padding: 15px;">Description</th>
-                                    <th style="padding: 10px;">Scheduled Time</th>
-                                    <th style="padding: 10px;">Scheduled Date</th>
-                                    <th style="padding: 10px;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
+                                    <thead>
+                                        <tr style="background-color: #007BFF; color: white; text-align: left;">
+                                            <th style="padding: 10px;">ID</th>
+                                            <th style="padding: 10px;">Task Name</th>
+                                            <th style="padding: 15px;">Description</th>
+                                            <th style="padding: 10px;">Scheduled Time</th>
+                                            <th style="padding: 10px;">Scheduled Date</th>
+                                            <th style="padding: 10px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
 
                 data.forEach((task, index) => {
                     table += `<tr style="border-bottom: 1px solid #dddddd;">
-                            <td style="padding: 10px; text-align: center;">${task.id}</td>
-                            <td style="padding: 10px;">${task.taskname}</td>
-                            <td style="padding: 10px;">${task.description}</td>
-                            <td style="padding: 15px; text-align: center;">${task.scheduleTime}</td>
-                            <td style="padding: 10px; text-align: center;">${task.scheduleDate}</td>
-                            <td style="padding: 10px; text-align: center;">${task.status}</td>
-                          </tr>`;
+                                    <td style="padding: 10px; text-align: center;">${task.id}</td>
+                                    <td style="padding: 10px;">${task.taskname}</td>
+                                    <td style="padding: 10px;">${task.description}</td>
+                                    <td style="padding: 15px; text-align: center;">${task.scheduleTime}</td>
+                                    <td style="padding: 10px; text-align: center;">${task.scheduleDate}</td>
+                                    <td style="padding: 10px; text-align: center;">${task.status}</td>
+                                  </tr>`;
                 });
 
                 table += `</tbody></table>`;
@@ -271,7 +251,7 @@ function listTasks() {
 }
 
 
-// Updated ListTasks Method
+// Updated ListTasks Method 
 // Function to list all tasks by fetching from the backend
 function listTasks() {
     fetch('/tasks/all')
@@ -287,27 +267,27 @@ function listTasks() {
             } else {
                 // Create a table element with improved styles
                 let table = `<table style="width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 1em; font-family: Arial, sans-serif; box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);">
-                        <thead>
-                            <tr style="background-color: #007BFF; color: white; text-align: left;">
-                                <th style="padding: 10px;">ID</th>
-                                <th style="padding: 10px;">Task Name</th>
-                                <th style="padding: 15px;">Description</th>
-                                <th style="padding: 10px;">Scheduled Time</th>
-                                <th style="padding: 10px;">Scheduled Date</th>
-                                <th style="padding: 10px;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
+                                <thead>
+                                    <tr style="background-color: #007BFF; color: white; text-align: left;">
+                                        <th style="padding: 10px;">ID</th>
+                                        <th style="padding: 10px;">Task Name</th>
+                                        <th style="padding: 15px;">Description</th>
+                                        <th style="padding: 10px;">Scheduled Time</th>
+                                        <th style="padding: 10px;">Scheduled Date</th>
+                                        <th style="padding: 10px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
 
                 data.forEach((task) => {
                     table += `<tr style="border-bottom: 1px solid #dddddd;">
-                        <td style="padding: 10px; text-align: center;">${task.id}</td>
-                        <td style="padding: 10px;">${task.taskname}</td>
-                        <td style="padding: 10px;">${task.description}</td>
-                        <td style="padding: 15px; text-align: center;">${task.scheduleTime}</td>
-                        <td style="padding: 10px; text-align: center;">${task.scheduleDate}</td>
-                        <td style="padding: 10px; text-align: center;">${task.status}</td>
-                      </tr>`;
+                                <td style="padding: 10px; text-align: center;">${task.id}</td>
+                                <td style="padding: 10px;">${task.taskname}</td>
+                                <td style="padding: 10px;">${task.description}</td>
+                                <td style="padding: 15px; text-align: center;">${task.scheduleTime}</td>
+                                <td style="padding: 10px; text-align: center;">${task.scheduleDate}</td>
+                                <td style="padding: 10px; text-align: center;">${task.status}</td>
+                              </tr>`;
                 });
 
                 table += `</tbody></table>`;
@@ -365,46 +345,46 @@ function listTasks() {
 
 // Function to update the task via AJAX
 // Function to update a task by sending a PUT request
-function updateTask(taskid,fieldName,newValue) {
-        console.log(fieldName);
-        console.log(newValue);
-        if (['name', 'description', 'date', 'time', 'status'].includes(fieldName)) {
+function updateTask(taskid, fieldName, newValue) {
+    console.log(fieldName);
+    console.log(newValue);
+    if (['name', 'description', 'date', 'time', 'status'].includes(fieldName)) {
 
-                if (newValue) {
-                    fetch(`/tasks/update/${encodeURIComponent(taskid)}?fieldName=${encodeURIComponent(fieldName)}&newValue=${encodeURIComponent(newValue)}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/text'
-                        }
-                    })
-                        .then(response => {
-                            if (response.ok) {
-                                return response.text();
-                            }
-                            throw new Error('Failed to update task');
-                        })
-                        .then(data => {
-                            appendMessage(`Task updated successfully!`, false);
-                            displayOptions(); // Show options again
-                            conversationStep = 0; // Reset for next operation
-                        })
-                        .catch(error => {
-                            appendMessage(`Error: ${error.message}`, false);
-                            console.log(error.message)
-                            displayOptions(); // Show options again
-                            conversationStep = 0; // Reset conversation for next operation
-                        });
-                } else {
-                    appendMessage("New value was not provided.", false);
+        if (newValue) {
+            fetch(`/tasks/update/${encodeURIComponent(taskid)}?fieldName=${encodeURIComponent(fieldName)}&newValue=${encodeURIComponent(newValue)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/text'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    }
+                    throw new Error('Failed to update task');
+                })
+                .then(data => {
+                    appendMessage(`Task updated successfully!`, false);
+                    displayOptions(); // Show options again
+                    conversationStep = 0; // Reset for next operation
+                })
+                .catch(error => {
+                    appendMessage(`Error: ${error.message}`, false);
+                    console.log(error.message)
                     displayOptions(); // Show options again
                     conversationStep = 0; // Reset conversation for next operation
-                }
-
-                // document.getElementById("user-input").removeEventListener("change", handleValueChange); // Remove listener after capturing value
-            }
-         else {
-            appendMessage('Invalid field. Please specify a valid field (name/description/date/time/status):', false);
+                });
+        } else {
+            appendMessage("New value was not provided.", false);
+            displayOptions(); // Show options again
+            conversationStep = 0; // Reset conversation for next operation
         }
+
+        // document.getElementById("user-input").removeEventListener("change", handleValueChange); // Remove listener after capturing value
+    }
+    else {
+        appendMessage('Invalid field. Please specify a valid field (name/description/date/time/status):', false);
+    }
 }
 
 // Function to delete the task via AJAX
@@ -428,7 +408,7 @@ function deleteTask(taskName) {
         });
 }
 
-// Updated the Delete task
+// Updated the Delete task 
 function deleteTask(taskName) {
     // Ask for user confirmation before deleting the task
     const confirmDeletion = confirm(`Are you sure you want to delete the task "${taskName}"?`);
@@ -459,21 +439,5 @@ function deleteTask(taskName) {
 }
 
 function executeCommand(command) {
-    fetch (`tasks/execute/${encodeURIComponent(command)}`, {
-        method: 'GET',
-    })
-        .then (response => {
-            if (response.ok) {
-                appendMessage(`Command "${command}" executed successfully!`, false);
-            } else {
-                throw new Error('Failed to execute task');
-            }
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset for next operation
-        })
-        .catch(error => {
-            appendMessage(`Error: ${error.message}`, false);
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset conversation for next operation
-        });
+
 }

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -72,14 +71,13 @@ public class TaskController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteTask(Long id) 
-    {
-        
+    public ResponseEntity<String> deleteTask(Long id) {
+
         taskService.deleteTask(id);
         return ResponseEntity.ok("Task Id :- " + id + " Deleted successfully!");
 
     }
-        // TO BE DELETED
+    // TO BE DELETED
     // 5. Mark task as complete/incomplete
     // @PutMapping("/status/{id}")
     // public ResponseEntity<Task> changeTaskStatus(@PathVariable Long id, @RequestParam boolean completed) {
@@ -92,6 +90,8 @@ public class TaskController {
     //     List<Task> tasks = taskService.searchTasks(query);
     //     return ResponseEntity.ok(tasks);
     // }
+
+    @SuppressWarnings("unused")
     @GetMapping("/execute")
     public ResponseEntity<String> executeCommand(@RequestParam String taskname) {
         try (BufferedInputStream bis = new BufferedInputStream(taskService.execute(taskname).getInputStream())) {

@@ -26,4 +26,11 @@ public class ScheduledTask {
 
     private LocalDateTime scheduleDateTime;
     private Boolean status;
+
+    public ScheduledTask(Task task, LocalDateTime scheduleDateTime, Boolean status) {
+        this.task = task;
+        this.scheduleDateTime = scheduleDateTime;
+        this.status = status;
+    }
+
 }

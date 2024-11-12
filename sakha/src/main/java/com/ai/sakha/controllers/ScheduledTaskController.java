@@ -48,8 +48,8 @@ public class ScheduledTaskController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ScheduledTask> createScheduledTask(@RequestBody ScheduledTask scheduledTask) {
-        return ResponseEntity.ok(scheduledTaskService.createScheduledTask(scheduledTask));
+    public ResponseEntity<ScheduledTaskDTO> createScheduledTask(@RequestBody ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+        return ResponseEntity.ok(scheduledTaskService.createScheduledTask(scheduledTaskDTO));
     }
 
     @PutMapping("/update")
@@ -62,9 +62,9 @@ public class ScheduledTaskController {
         return ResponseEntity.ok(scheduledTaskService.deleteScheduledTask(id));
     }
 
-    @GetMapping("/execute")
-    public ResponseEntity<?> run(@RequestBody ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
-        scheduledTaskService.addCronJob(scheduledTaskDTO);
-        return ResponseEntity.ok("done broo");
-    }
+//     @GetMapping("/execute")
+//     public ResponseEntity<?> run(@RequestBody ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+//         scheduledTaskService.addCronJob(scheduledTaskDTO);
+//         return ResponseEntity.ok("done broo");
+//     }
 }

@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ai.sakha.dtoMapper.ScheduledTaskDtoMapper;
 import com.ai.sakha.entities.ScheduledTask;
 import com.ai.sakha.entities.ScheduledTaskDTO;
 import com.ai.sakha.repositories.ScheduledTaskRepository;
@@ -27,6 +28,9 @@ public class ScheduledTaskService {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    ScheduledTaskDtoMapper scheduledTaskDtoMapper;
 
     public Collection<ScheduledTask> getAll() {
         return scheduledTaskRepository.findAll();
@@ -41,9 +45,11 @@ public class ScheduledTaskService {
         throw new RuntimeException("Scheduled task with id " + id + " not found");
     }
 
-    public ScheduledTask createScheduledTask(ScheduledTask scheduledTask) {
-        scheduledTask.setTask(taskService.findTaskById(scheduledTask.getTask().getId()).orElseThrow());
-        return scheduledTaskRepository.save(scheduledTask);
+    public ScheduledTaskDTO createScheduledTask(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+        addCronJob(scheduledTaskDTO);
+        ScheduledTask result = scheduledTaskRepository.save(scheduledTaskDtoMapper.toEntity(scheduledTaskDTO));
+        ScheduledTaskDTO response = scheduledTaskDtoMapper.toDTO(result);
+        return response;
     }
 
     public ScheduledTask updateScheduledTask(ScheduledTask otherScheduledTask) {
@@ -84,11 +90,11 @@ public class ScheduledTaskService {
         return String.format("%d %d %d %d %d", minute, hour, dayOfMonth, month, dayOfWeek);
     }
 
-    public void addCronJob(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+    private void addCronJob(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
 
         String taskname = scheduledTaskDTO.getTaskname();
         LocalDateTime dateTime = scheduledTaskDTO.getDateTime();
-        String command = taskService.getTask(taskname).getCommand();
+        String command = "sudo " + taskService.getTask(taskname).getCommand();
         String schedule = generateCronExpression(dateTime);
         String cronJob = schedule + " " + command;
         String crontabDirPath = "/home/admin/Desktop/Sakha/sakha/src/main/resources";

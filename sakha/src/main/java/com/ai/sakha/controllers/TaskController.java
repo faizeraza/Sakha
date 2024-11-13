@@ -46,9 +46,14 @@ public class TaskController {
 
     // 1. Create a new task
     @PostMapping("/create")
-    public ResponseEntity<Task> createTask(@RequestBody Task task) {
-        Task newTask = taskService.createTask(task);
-        return ResponseEntity.status(201).body(newTask);  // 201 Created
+    public ResponseEntity<?> createTask(@RequestBody Task task) {
+        Task newTask;
+        try {
+            newTask = taskService.createTask(task);
+            return ResponseEntity.status(201).body(newTask);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }  // 201 Created
     }
 
     // 2. Get all tasks

@@ -1,6 +1,8 @@
 package com.ai.sakha.services;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,8 +18,23 @@ public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public Task createTask(Task task) {
-        return taskRepository.save(task);
+    public Task createTask(Task task) throws Exception {
+        ProcessBuilder authCrontab = new ProcessBuilder("bash", "-c", "unset GTK_PATH && zenity --password | sudo -S echo Authorized ");
+        // authCrontab.directory(new File("/home/admin/Desktop/Sakha/sakha/src/main/resources/"));
+        Process process = authCrontab.start();
+        String mesage = "";
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                mesage += line; // Print each line of output
+            }
+        }
+        System.out.println(mesage);
+        if (mesage.contains("Authorized")) {
+            return taskRepository.save(task);
+        } else {
+            throw new Exception("Not Authorized");
+        }
     }
 
     public Task getTask(String name) {

@@ -58,7 +58,7 @@ public class ScheduledTaskController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ScheduledTask> deleteScheduledTask(@PathVariable Long id) {
+    public ResponseEntity<ScheduledTask> deleteScheduledTask(@PathVariable Long id) throws IOException, InterruptedException {
         return ResponseEntity.ok(scheduledTaskService.deleteScheduledTask(id));
     }
 

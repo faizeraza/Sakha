@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -98,5 +99,48 @@ public class CrontabHandler {
         }
 
         return setCrontabProcess.waitFor() == 0 || authCrontabProcess.waitFor() == 0;
+    }
+
+    //deletion logic
+    public void deleteCronJob(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+        String taskname = scheduledTaskDTO.getTaskname();
+        String command = taskService.getTask(taskname).getCommand();
+        LocalDateTime dateTime = scheduledTaskDTO.getDateTime();
+        String schedule = generateCronExpression(dateTime);
+
+        
+        // Construct the cron job string to be deleted
+        String cronJobToDelete = String.format("%s %s >> /home/admin/Desktop/Sakha/sakha/src/main/resources/logfile.log 2>&1", schedule, command);
+        String crontabDirPath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/";
+        String crontabFilePath = crontabDirPath + "crontabList";
+    
+        // Retrieve current crontab
+        if (!retrieveCurrentCrontab(crontabDirPath)) {
+            System.err.println("Failed to retrieve the current crontab.");
+            return;
+        }
+    
+        // Read current crontab and remove the specified cron job
+        removeCronJob(crontabFilePath, cronJobToDelete);
+    
+        // Set the new crontab
+        if (setCrontabWithSudo(crontabDirPath)) {
+            System.out.println("Crontab updated successfully.");
+        } else {
+            System.err.println("Failed to update crontab.");
+        }
+    
+    }
+    
+    private void removeCronJob(String crontabFilePath, String cronJobToDelete) throws IOException {
+        // Read all lines from the crontab file
+        List<String> lines = Files.readAllLines(Paths.get(crontabFilePath));
+        
+        // Remove the specific cron job
+        lines.removeIf(line -> line.contains(cronJobToDelete));
+    
+        // Write the updated lines back to the crontab file
+        Files.write(Paths.get(crontabFilePath), lines, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+        System.out.println("Removed cron job: " + cronJobToDelete);
     }
 }

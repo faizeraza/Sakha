@@ -61,10 +61,13 @@ public class ScheduledTaskService {
         throw new RuntimeException("Scheduled task with id " + otherScheduledTask.getId() + " not found");
     }
 
-    public ScheduledTask deleteScheduledTask(Long id) {
+    public ScheduledTask deleteScheduledTask(Long id) throws IOException, InterruptedException {
         Optional<ScheduledTask> scheduleTaskOpt = scheduledTaskRepository.findById(id);
         if (scheduleTaskOpt.isPresent()) {
             scheduledTaskRepository.deleteById(id);
+            ScheduledTask scheduledTask = scheduleTaskOpt.get();
+            ScheduledTaskDTO scheduledTaskDto = scheduledTaskDtoMapper.toDTO(scheduledTask);
+            crontabHandler.deleteCronJob(scheduledTaskDto);
             return scheduleTaskOpt.get();
         }
 

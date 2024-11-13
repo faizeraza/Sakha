@@ -29,3 +29,15 @@ This project provides a RESTful API for scheduling tasks using cron jobs. Users 
 2. Navigate to the project directory:
     ```bash
     cd task-scheduler
+
+3. demo json
+   '''bash
+   {
+
+    "taskname": "wifi on",
+
+    "dateTime": "2024-11-12T14:18:00",
+
+    "status": "pending"
+
+}

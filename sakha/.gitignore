@@ -33,5 +33,9 @@ build/
 ### VS Code ###
 .vscode/
 
-src/main/resources/application.properties
-
+.vscode/launch.json
+.vscode/settings.json
+crontabList
+/src/main/resources/crontabList
+/src/main/resources/logfile.log
+/src/main/resources/scripts/*

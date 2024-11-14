@@ -25,7 +25,7 @@ public class ScheduledTaskService {
     ScheduledTaskDtoMapper scheduledTaskDtoMapper;
 
     @Autowired
-    CrontabHandler crontabHandler;
+    ServiceHandler serviceHandler;
 
     public Collection<ScheduledTask> getAll() {
         return scheduledTaskRepository.findAll();
@@ -41,8 +41,8 @@ public class ScheduledTaskService {
     }
 
     public ScheduledTaskDTO createScheduledTask(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
-        crontabHandler.addCronJob(scheduledTaskDTO);
         ScheduledTask result = scheduledTaskRepository.save(scheduledTaskDtoMapper.toEntity(scheduledTaskDTO));
+        System.out.println(serviceHandler.addCronJob(result));
         ScheduledTaskDTO response = scheduledTaskDtoMapper.toDTO(result);
         return response;
     }
@@ -67,7 +67,6 @@ public class ScheduledTaskService {
             scheduledTaskRepository.deleteById(id);
             ScheduledTask scheduledTask = scheduleTaskOpt.get();
             ScheduledTaskDTO scheduledTaskDto = scheduledTaskDtoMapper.toDTO(scheduledTask);
-            crontabHandler.deleteCronJob(scheduledTaskDto);
             return scheduleTaskOpt.get();
         }
 

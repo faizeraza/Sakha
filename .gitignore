@@ -2,3 +2,5 @@
 .vscode/settings.json
 crontabList
 sakha/src/main/resources/crontabList
+sakha/src/main/resources/logfile.log
+sakha/src/main/resources/script.sh

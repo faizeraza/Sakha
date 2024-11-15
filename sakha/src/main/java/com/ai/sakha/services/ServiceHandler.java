@@ -3,7 +3,7 @@ package com.ai.sakha.services;
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Component;
 
 import com.ai.sakha.entities.ScheduledTask;
@@ -12,9 +12,6 @@ import com.ai.sakha.entities.Task;
 @Component
 public class ServiceHandler {
 
-    @Autowired
-    TaskService taskService;
-
     public boolean addCronJob(ScheduledTask scheduledTask) throws IOException, InterruptedException {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Long sId = scheduledTask.getId();
@@ -22,7 +19,7 @@ public class ServiceHandler {
         String taskname = task.getTaskname();
         String dateTime = dtf.format(scheduledTask.getScheduleDateTime());
         // String schedule = generateCronExpression(dateTime);
-        String command = task.getCommand();
+        String command = task.getCommand() + ">> /home/admin/Desktop/Sakha/sakha/src/main/resources/logfile.log 2>&1";
         String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + sId + ".sh";
         String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + sId + ".service";
         String timerName = (taskname.replaceAll("\\s", "")).toLowerCase() + sId + ".timer";
@@ -30,10 +27,16 @@ public class ServiceHandler {
 
         String scriptPath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/scripts/";
 
-        String scriptCommand = String.format("#!/bin/bash\n%s\n" + //
-                "systemctl --user stop %s\n" + //
-                "systemctl --user disable %s\n" + //
-                "rm /home/admin/.config/systemd/user/%s", command, timerName, timerName, timerName);
+        String scriptCommand = String.format("""
+                                             #!/bin/bash
+                                             %s
+                                             systemctl --user stop %s
+                                             systemctl --user disable %s
+                                             rm /home/admin/.config/systemd/user/%s""" //
+                //
+                //
+                ,
+                 command, timerName, timerName, timerName);
 
         ProcessBuilder createScript = new ProcessBuilder("bash", "-c", "echo '" + scriptCommand + "' > " + scriptName + " && chmod +x " + scriptName);
         createScript.directory(new File(scriptPath));

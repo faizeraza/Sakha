@@ -1,57 +1,32 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Task Manager</title>
-    <link rel="stylesheet" href="../static/css/style.css">
-
+    <title>🗿</title>
+    <link rel="stylesheet" href="/home/admin/Desktop/Sakha/sakha/src/main/resources/static/css/sty.css">
 </head>
-
 <body>
-
     <div class="chat-container">
-        <div class="chat-header">
-            🗿
-        </div>
         <div class="chat-box" id="chatBox">
-            <div class="chat-message bot">
-                <p>Hi there! How can I assist you today? Choose one of the following options:</p>
+            <!-- Initial Bot Message -->
+            <div class="message bot">
+                <p>Welcome to the Task Scheduler Bot! How can I assist you today?</p>
             </div>
-            <div class="chat-message bot">
-                <p>1. Create a Task</p>
-            </div>
-            <div class="chat-message bot">
-                <p>2. List All Tasks</p>
-            </div>
-            <div class="chat-message bot">
-                <p>3. Update a Task</p>
-            </div>
-            <div class="chat-message bot">
-                <p>4. Delete a Task</p>
-            </div>
-            <div class="chat-message bot">
-                <p>5. Execute a Task</p>
+            <div class="message bot">
+                <p>Choose an option:</p>
+                <div class="options">
+                    <button onclick="showExecuteTaskOptions()">Execute a Task</button>
+                    <button onclick="showCreateTaskOptions()">Create a Task</button>
+                </div>
             </div>
         </div>
-        <div class="chat-input">
-            <input type="text" id="userInput" placeholder="Type your message here..." />
-            <button id="btn" onclick="sendMessage()">
-                <!-- Send icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20"
-                    height="20">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M2.5 12.5l19-9-9 19-3-10h-7z" />
-                </svg>
-
-            </button>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type your response..." />
+            <button onclick="handleUserInput()">Send</button>
         </div>
     </div>
 
-    
-    <script src="../static/js/script.js"></script>
-
+    <script src="/home/admin/Desktop/Sakha/sakha/src/main/resources/static/js/scr.js"></script>
 </body>
-
 </html>

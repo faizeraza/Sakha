@@ -1,0 +1,150 @@
+/* Body and Chatbox Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(145deg, #6e7bff, #1e3c72);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.chat-container {
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 450px;
+    background-color: #f1f1f1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.message {
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.bot {
+    background-color: #d1f7c4;
+    align-self: flex-start;
+}
+
+.user {
+    background-color: #c4e1f7;
+    align-self: flex-end;
+}
+
+.input-container {
+    display: flex;
+    padding: 15px;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+button {
+    padding: 12px 20px;
+    margin-left: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:focus {
+    outline: none;
+}
+
+/* Options Styling */
+.options {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.options button {
+    padding: 15px 25px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.options button:hover {
+    background-color: #218838;
+}
+
+.options button:focus {
+    outline: none;
+}
+
+/* Smooth scrolling for chat messages */
+.chat-box {
+    scroll-behavior: smooth;
+}
+
+/* Table for listing tasks */
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+}
+
+table td button {
+    padding: 8px 12px;
+    margin: 5px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+table td button:hover {
+    background-color: #218838;
+}
+
+table td .action-buttons {
+    display: flex;
+    justify-content: space-around;
+}

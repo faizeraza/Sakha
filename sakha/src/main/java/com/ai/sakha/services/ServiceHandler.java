@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.ai.sakha.entities.ScheduledTask;
@@ -17,36 +16,30 @@ import com.ai.sakha.entities.Task;
 @Component
 public class ServiceHandler {
 
-        @Autowired
-        TaskService taskService;
-
-        public boolean addCronJob(ScheduledTask scheduledTask) throws IOException, InterruptedException {
+        public boolean addServiceTimer(ScheduledTask scheduledTask) throws IOException, InterruptedException {
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 Long sId = scheduledTask.getId();
                 Task task = scheduledTask.getTask();
                 String taskname = task.getTaskname();
                 String dateTime = dtf.format(scheduledTask.getScheduleDateTime());
-                // String schedule = generateCronExpression(dateTime);
+
                 String command = task.getCommand();
                 String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".sh";
                 String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
                 String timerName = (taskname.replaceAll("\\s", "")).toLowerCase() + sId + ".timer";
-                System.out.println(dateTime);
 
                 String scriptPath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/scripts/";
 
-                String scriptCommand = String.format(
-                                "#!/bin/bash\n%s\necho \"This service was triggered by the timer: $TIMER_NAME\" | zenity --text-info",
-                                command, timerName, timerName, timerName);
+                String scriptCommand = String.format("#!/bin/bash\n%s", command);
 
                 ProcessBuilder createScript = new ProcessBuilder("bash", "-c",
                                 "echo '" + scriptCommand + "' > " + scriptName + " && chmod +x " + scriptName);
                 createScript.directory(new File(scriptPath));
                 Process createScriptProcess = createScript.start();
 
-                String service = String.format(
-                                "[Unit]\nDescription=\"%s\"\n\n[Service]\nExecStart=\"%s\"",
-                                taskname, scriptPath + scriptName);
+                // String service = String.format(
+                //                 "[Unit]\nDescription=\"%s\"\n\n[Service]\nExecStart=\"%s\"",
+                //                 taskname, scriptPath + scriptName);
 
                 String timer = String.format(
                                 "[Unit]\nDescription=\"%s\"\n\n[Timer]\nOnCalendar=%s\nUnit=%s\n\n[Install]\nWantedBy=multi-user.target",
@@ -58,13 +51,14 @@ public class ServiceHandler {
                 setTimer.directory(new File(servicePath));
                 Process setTimerProcess = setTimer.start();
 
-                ProcessBuilder setService = new ProcessBuilder("bash", "-c", "echo '" + service + "' > " + serviceName);
-                setService.directory(new File(servicePath));
-                Process setServiceProcess = setService.start();
+                // ProcessBuilder setService = new ProcessBuilder("bash", "-c", "echo '" +
+                // service + "' > " + serviceName);
+                // setService.directory(new File(servicePath));
+                // Process setServiceProcess = setService.start();
 
-                ProcessBuilder executeService = new ProcessBuilder("bash", "-c", "systemctl --user daemon-reload");
-                executeService.directory(new File(servicePath));
-                Process executeServiceProcess = executeService.start();
+                ProcessBuilder reloadSystem = new ProcessBuilder("bash", "-c", "systemctl --user daemon-reload");
+                reloadSystem.directory(new File(servicePath));
+                Process reloadSystemProcess = reloadSystem.start();
 
                 ProcessBuilder executeTimer = new ProcessBuilder("bash", "-c", "systemctl --user restart " + timerName);
                 executeTimer.directory(new File(servicePath));
@@ -83,9 +77,9 @@ public class ServiceHandler {
                 ProcessBuilder cleanTimers = new ProcessBuilder("bash", "-c", scriptPath + "cleaningscript.sh");
                 Process cleanTimersProcess = cleanTimers.start();
 
-                return createScriptProcess.waitFor() == 0 && setServiceProcess.waitFor() == 0
+                return createScriptProcess.waitFor() == 0
                                 && setTimerProcess.waitFor() == 0 && executeTimerProcess.waitFor() == 0
-                                && executeServiceProcess.waitFor() == 0 && cleanScriptProcess.waitFor() == 0
+                                && reloadSystemProcess.waitFor() == 0 && cleanScriptProcess.waitFor() == 0
                                 && cleanTimersProcess.waitFor() == 0;
 
         }

@@ -77,7 +77,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteTask(@PathVariable Long id) {
+    public ResponseEntity<String> deleteTask(@PathVariable Long id) throws IOException, InterruptedException {
 
         taskService.deleteTask(id);
         return ResponseEntity.ok("Task Id :- " + id + " Deleted successfully!");

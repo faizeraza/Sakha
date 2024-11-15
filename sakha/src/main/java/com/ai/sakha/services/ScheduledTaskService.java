@@ -42,7 +42,7 @@ public class ScheduledTaskService {
 
     public ScheduledTaskDTO createScheduledTask(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
         ScheduledTask result = scheduledTaskRepository.save(scheduledTaskDtoMapper.toEntity(scheduledTaskDTO));
-        System.out.println(serviceHandler.addCronJob(result));
+        System.out.println(serviceHandler.addServiceTimer(result));
         ScheduledTaskDTO response = scheduledTaskDtoMapper.toDTO(result);
         return response;
     }

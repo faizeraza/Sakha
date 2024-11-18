@@ -38,18 +38,16 @@ public class ServiceHandler {
                 String command = task.getCommand();
                 String taskname = task.getTaskname();
                 String modifiedTaskName = (taskname.replaceAll("\\s", "")).toLowerCase();
-                String scriptName = modifiedTaskName;
                 String serviceName = modifiedTaskName + ".service";
 
                 String scriptCommand = String.format("#!/bin/bash\n%s", command);
 
-                boolean scriptCreated = createScript(scriptCommand, scriptName);
+                boolean scriptCreated = createScript(scriptCommand, modifiedTaskName);
 
                 String service = String.format(
-                                "[Unit]\nDescription=\"%s\"\n\n[Service]\nExecStart=\"%s\"",
-                                taskname, scriptPath + scriptName);
+                                "[Unit]\nDescription=\"%s\"\n\n[Service]\nExecStart=\"%s.sh\"",
+                                taskname, scriptPath + modifiedTaskName);
 
-                String servicePath = "/home/admin/.config/systemd/user/";
                 ProcessBuilder setService = new ProcessBuilder("bash", "-c", "echo '" + service + "' > " + serviceName);
                 setService.directory(new File(servicePath));
                 Process setServiceProcess = setService.start();

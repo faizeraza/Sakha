@@ -11,7 +11,10 @@ import org.springframework.stereotype.Service;
 import com.ai.sakha.dtoMapper.ScheduledTaskDtoMapper;
 import com.ai.sakha.entities.ScheduledTask;
 import com.ai.sakha.entities.ScheduledTaskDTO;
+import com.ai.sakha.entities.Task;
 import com.ai.sakha.repositories.ScheduledTaskRepository;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class ScheduledTaskService {
@@ -28,6 +31,12 @@ public class ScheduledTaskService {
     @Autowired
     ServiceHandler serviceHandler;
 
+    @PostConstruct
+    private void sync() throws IOException, InterruptedException {
+        for (ScheduledTask scheduledTask : scheduledTaskRepository.findAll())
+            serviceHandler.addServiceTimer(scheduledTask);
+    }
+
     public Collection<ScheduledTask> getAll() {
         return scheduledTaskRepository.findAll();
     }
@@ -41,7 +50,8 @@ public class ScheduledTaskService {
         throw new RuntimeException("Scheduled task with id " + id + " not found");
     }
 
-    public ScheduledTaskDTO createScheduledTask(ScheduledTaskDTO scheduledTaskDTO) throws IOException, InterruptedException {
+    public ScheduledTaskDTO createScheduledTask(ScheduledTaskDTO scheduledTaskDTO)
+            throws IOException, InterruptedException {
         ScheduledTask result = scheduledTaskRepository.save(scheduledTaskDtoMapper.toEntity(scheduledTaskDTO));
         List<Long> elapsedTimersIds = serviceHandler.deleteElapsedTimers();
         System.out.println(elapsedTimersIds);
@@ -51,7 +61,8 @@ public class ScheduledTaskService {
         return response;
     }
 
-    public ScheduledTask updateScheduledTask(ScheduledTask otherScheduledTask) throws IOException, InterruptedException {
+    public ScheduledTask updateScheduledTask(ScheduledTask otherScheduledTask)
+            throws IOException, InterruptedException {
         Optional<ScheduledTask> scheduleTaskOpt = scheduledTaskRepository.findById(otherScheduledTask.getId());
         if (scheduleTaskOpt.isPresent()) {
             ScheduledTask scheduledTask = scheduleTaskOpt.get();
@@ -71,7 +82,7 @@ public class ScheduledTaskService {
             scheduledTaskRepository.deleteById(id);
             ScheduledTask scheduledTask = scheduleTaskOpt.get();
             ScheduledTaskDTO scheduledTaskDto = scheduledTaskDtoMapper.toDTO(scheduledTask);
-            String timer = (scheduledTaskDto.getTaskname().replaceAll("\\s", "")).toLowerCase() + + id + ".timer";
+            String timer = (scheduledTaskDto.getTaskname().replaceAll("\\s", "")).toLowerCase() + +id + ".timer";
             System.out.println(timer);
             serviceHandler.deleteServiceTimer(timer);
             return scheduledTaskDto;

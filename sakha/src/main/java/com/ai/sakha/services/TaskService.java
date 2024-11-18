@@ -9,8 +9,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ai.sakha.entities.ScheduledTask;
 import com.ai.sakha.entities.Task;
 import com.ai.sakha.repositories.TaskRepository;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class TaskService {
@@ -20,6 +23,12 @@ public class TaskService {
 
     @Autowired
     private ServiceHandler serviceHandler;
+
+    @PostConstruct
+    private void sync() throws IOException, InterruptedException {
+        for (Task task : taskRepository.findAll())
+            serviceHandler.createService(task);
+    }
 
     public Task createTask(Task task) throws Exception {
         ProcessBuilder authorization = new ProcessBuilder("bash", "-c",
@@ -76,8 +85,7 @@ public class TaskService {
                 taskRepository.delete(task);
             else
                 throw new RuntimeException("An error occurred while creating a service for the task");
-        }
-        else
+        } else
             throw new RuntimeException("Task not found");
     }
 
@@ -92,6 +100,5 @@ public class TaskService {
     public Process execute(String taskname) throws IOException, InterruptedException {
         return serviceHandler.executeService(taskname);
     }
-
 
 }

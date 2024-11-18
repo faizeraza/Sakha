@@ -37,8 +37,9 @@ public class ServiceHandler {
         public boolean createService(Task task) throws IOException, InterruptedException {
                 String command = task.getCommand();
                 String taskname = task.getTaskname();
-                String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".sh";
-                String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
+                String modifiedTaskName = (taskname.replaceAll("\\s", "")).toLowerCase();
+                String scriptName = modifiedTaskName;
+                String serviceName = modifiedTaskName + ".service";
 
                 String scriptCommand = String.format("#!/bin/bash\n%s", command);
 
@@ -90,13 +91,8 @@ public class ServiceHandler {
                 String taskname = task.getTaskname();
                 String dateTime = dtf.format(scheduledTask.getScheduleDateTime());
 
-                String command = task.getCommand();
                 String modifiedTaskname = (taskname.replaceAll("\\s", "")).toLowerCase();
-                String timerName = (taskname.replaceAll("\\s", "")).toLowerCase() + sId + ".timer";
-
-                String scriptCommand = String.format("#!/bin/bash\n%s", command);
-
-                boolean scriptCreated = createScript(scriptCommand, modifiedTaskname);
+                String timerName = modifiedTaskname + sId + ".timer";
 
                 String timer = String.format(
                                 "[Unit]\nDescription=\"%s\"\n\n[Timer]\nOnCalendar=%s\nUnit=%s.service\n\n[Install]\nWantedBy=multi-user.target",
@@ -114,7 +110,7 @@ public class ServiceHandler {
                 executeTimer.directory(new File(servicePath));
                 Process executeTimerProcess = executeTimer.start();
 
-                return scriptCreated && setTimerProcess.waitFor() == 0 && executeTimerProcess.waitFor() == 0
+                return setTimerProcess.waitFor() == 0 && executeTimerProcess.waitFor() == 0
                                 && reloadSystemProcess.waitFor() == 0;
 
         }

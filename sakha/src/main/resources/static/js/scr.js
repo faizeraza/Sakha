@@ -136,7 +136,7 @@ function promptForDateTime(taskname) {
     const scheduleButton = document.createElement("button");
     scheduleButton.textContent = "Schedule Task";
     scheduleButton.onclick = async () => {
-        const dateTime = `${dateInput.value}T${timeInput.value}`;
+        const dateTime = `${dateInput.value} ${timeInput.value}:00`;
         scheduleTaskWithDateTime(taskname, dateTime);
     };
 
@@ -150,7 +150,7 @@ async function scheduleTaskWithDateTime(taskname, dateTime) {
         await fetch('http://localhost:8080/scheduledTask/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ taskname, scheduleDateTime: dateTime })
+            body: JSON.stringify({ taskname, dateTime : dateTime, status: "pending" })
         });
         addMessage(`Task scheduled for ${dateTime}.`, "bot");
     } catch (error) {

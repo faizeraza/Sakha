@@ -33,15 +33,15 @@ public class TaskController {
     @GetMapping("/basic")
     public String base(Model model) {
         model.addAttribute("message", "Hello, Thymeleaf!");
-        return "base";  // This refetasksrs to home.html in the templates folder
+        return "base"; // This refetasksrs to home.html in the templates folder
     }
 
     @RequestMapping("/home")
     public String home(Model model) {
-        List<Task> taskList = taskService.getAllTasks();  // Fetch tasks from service
-        model.addAttribute("tasks", taskList);  // Add task list to the model
-        model.addAttribute("task", new Task());  // Add empty tasks object for form binding
-        return "index";  // This will render the home.html template
+        List<Task> taskList = taskService.getAllTasks(); // Fetch tasks from service
+        model.addAttribute("tasks", taskList); // Add task list to the model
+        model.addAttribute("task", new Task()); // Add empty tasks object for form binding
+        return "index"; // This will render the home.html template
     }
 
     // 1. Create a new task
@@ -53,11 +53,11 @@ public class TaskController {
             return ResponseEntity.status(201).body(newTask);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
-        }  // 201 Created
+        } // 201 Created
     }
 
     // 2. Get all tasks
-    @GetMapping("/all")  // Changed to GET
+    @GetMapping("/all") // Changed to GET
     public ResponseEntity<List<Task>> getAllTasks() {
         List<Task> tasks = taskService.getAllTasks();
         return ResponseEntity.ok(tasks);
@@ -86,31 +86,28 @@ public class TaskController {
     // TO BE DELETED
     // 5. Mark task as complete/incomplete
     // @PutMapping("/status/{id}")
-    // public ResponseEntity<Task> changeTaskStatus(@PathVariable Long id, @RequestParam boolean completed) {
-    //     Task task = taskService.updateTaskStatus(id, completed);
-    //     return ResponseEntity.ok(task);
+    // public ResponseEntity<Task> changeTaskStatus(@PathVariable Long id,
+    // @RequestParam boolean completed) {
+    // Task task = taskService.updateTaskStatus(id, completed);
+    // return ResponseEntity.ok(task);
     // }
     // 6. Search for tasks
-    // @GetMapping("/search")  // Changed to GET
+    // @GetMapping("/search") // Changed to GET
     // public ResponseEntity<List<Task>> searchTasks(@RequestParam String query) {
-    //     List<Task> tasks = taskService.searchTasks(query);
-    //     return ResponseEntity.ok(tasks);
+    // List<Task> tasks = taskService.searchTasks(query);
+    // return ResponseEntity.ok(tasks);
     // }
 
-    @SuppressWarnings("unused")
     @GetMapping("/execute")
-    public ResponseEntity<String> executeCommand(@RequestParam String taskname) {
+    public ResponseEntity<String> executeCommand(@RequestParam String taskname) throws InterruptedException {
         try (BufferedInputStream bis = new BufferedInputStream(taskService.execute(taskname).getInputStream())) {
             byte buffer[] = new byte[1024];
-            int bytes;
-            while ((bytes = bis.read(buffer)) != -1) {
+            while ((bis.read(buffer)) != -1);
 
-            }
             String results = new String(buffer, StandardCharsets.UTF_8);
             return ResponseEntity.ok().body(results.trim());
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(e.toString());
         }
-        // return ResponseEntity.ok("Successfully executed command");
     }
 }

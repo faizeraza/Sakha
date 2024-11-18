@@ -1,7 +1,6 @@
 package com.ai.sakha.services;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -19,9 +18,12 @@ public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private ServiceHandler serviceHandler;
+
     public Task createTask(Task task) throws Exception {
         ProcessBuilder authorization = new ProcessBuilder("bash", "-c",
-                "unset GTK_PATH && zenity --password | sudo -S echo Authorized ");
+                "unset GTK_PATH && zenity --password | sudo -S echo Authorized");
         Process process = authorization.start();
         String message = "";
         try (BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -32,7 +34,7 @@ public class TaskService {
         }
         System.out.println(message);
         if (message.contains("Authorized"))
-            if (createService(task))
+            if (serviceHandler.createService(task))
                 return taskRepository.save(task);
             else
                 throw new RuntimeException("An error occurred while creating a service for the task");
@@ -55,7 +57,7 @@ public class TaskService {
             Task taskToUpdate = optionalTask.get();
             task.setId(taskToUpdate.getId());
 
-            if (createService(task))
+            if (serviceHandler.createService(task))
                 return taskRepository.save(task);
             else
                 throw new RuntimeException("An error occurred while creating a service for the task");
@@ -70,7 +72,7 @@ public class TaskService {
         if (optionalTask.isPresent()) {
             Task task = optionalTask.get();
 
-            if (deleteService(task))
+            if (serviceHandler.deleteService(task))
                 taskRepository.delete(task);
             else
                 throw new RuntimeException("An error occurred while creating a service for the task");
@@ -79,17 +81,6 @@ public class TaskService {
             throw new RuntimeException("Task not found");
     }
 
-    // TO BE DELETED
-    // public Task updateTaskStatus(Long id, boolean completed) {
-    // Task task = taskRepository.findById(id).orElseThrow(() -> new
-    // RuntimeException("Task not found"));
-    // return taskRepository.save(task);
-    // }
-    // @SuppressWarnings("unchecked")
-    // public List<Task> searchTasks(String query) {
-    // return (List<Task>) taskRepository.findByTaskname(query);
-    // }
-    // Update task New Chnages
     public Optional<Task> findTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -98,56 +89,9 @@ public class TaskService {
         taskRepository.save(task); // Save the task to the database
     }
 
-    public Process execute(String taskname) throws IOException {
-        Task task = this.getTask(taskname);
-        return new ProcessBuilder(
-                task.getCommand().split(" ")).start();
+    public Process execute(String taskname) throws IOException, InterruptedException {
+        return serviceHandler.executeService(taskname);
     }
 
-    private boolean createService(Task task) throws IOException, InterruptedException {
-        String command = task.getCommand();
-        String taskname = task.getTaskname();
-        String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".sh";
-        String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
 
-        String scriptPath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/scripts/";
-
-        String scriptCommand = String.format("#!/bin/bash\n%s", command);
-
-        ProcessBuilder createScript = new ProcessBuilder("bash", "-c",
-                "echo '" + scriptCommand + "' > " + scriptName + " && chmod +x " + scriptName);
-        createScript.directory(new File(scriptPath));
-        Process createScriptProcess = createScript.start();
-
-        String service = String.format(
-                "[Unit]\nDescription=\"%s\"\n\n[Service]\nExecStart=\"%s\"",
-                taskname, scriptPath + scriptName);
-
-        String servicePath = "/home/admin/.config/systemd/user/";
-        ProcessBuilder setService = new ProcessBuilder("bash", "-c", "echo '" + service + "' > " + serviceName);
-        setService.directory(new File(servicePath));
-        Process setServiceProcess = setService.start();
-
-        return createScriptProcess.waitFor() == 0 && setServiceProcess.waitFor() == 0;
-    }
-
-    private boolean deleteService(Task task) throws IOException, InterruptedException {
-        String taskname = task.getTaskname();
-        String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".sh";
-        String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
-
-        String scriptPath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/scripts/";
-
-        ProcessBuilder deleteScript = new ProcessBuilder("bash", "-c", "rm " + scriptName);
-        deleteScript.directory(new File(scriptPath));
-        Process deleteScriptProcess = deleteScript.start();
-
-        String servicePath = "/home/admin/.config/systemd/user/";
-
-        ProcessBuilder deleteService = new ProcessBuilder("bash", "-c", "rm " + serviceName);
-        deleteService.directory(new File(servicePath));
-        Process deleteServiceProcess = deleteService.start();
-
-        return deleteScriptProcess.waitFor() == 0 && deleteServiceProcess.waitFor() == 0;
-    }
 }

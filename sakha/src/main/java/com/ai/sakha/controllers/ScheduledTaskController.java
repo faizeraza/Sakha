@@ -53,7 +53,7 @@ public class ScheduledTaskController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<ScheduledTask> updateScheduledTask(@RequestBody ScheduledTask scheduledTask) {
+    public ResponseEntity<ScheduledTask> updateScheduledTask(@RequestBody ScheduledTask scheduledTask) throws IOException, InterruptedException {
         return ResponseEntity.ok(scheduledTaskService.updateScheduledTask(scheduledTask));
     }
 

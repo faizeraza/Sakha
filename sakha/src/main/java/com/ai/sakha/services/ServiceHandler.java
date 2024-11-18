@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,71 @@ import com.ai.sakha.entities.Task;
 @Component
 public class ServiceHandler {
 
+        private final String scriptPath = System.getProperty("user.dir") + "/sakha/src/main/resources/scripts/";
+        private final String servicePath = System.getProperty("user.home") + "/.config/systemd/user/";
+
+        // -------------- script related ---------------------
+        private boolean createScript(String scriptCommand, String scriptName) throws IOException, InterruptedException {
+                String modifiedScriptName = scriptName + ".sh";
+                ProcessBuilder createScript = new ProcessBuilder("bash", "-c",
+                                "echo '" + scriptCommand + "' > " + modifiedScriptName + " && chmod +x "
+                                                + modifiedScriptName);
+                createScript.directory(new File(scriptPath));
+                Process createScriptProcess = createScript.start();
+
+                return createScriptProcess.waitFor() == 0;
+        }
+
+        // ---------- service related ----------
+        public boolean createService(Task task) throws IOException, InterruptedException {
+                String command = task.getCommand();
+                String taskname = task.getTaskname();
+                String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".sh";
+                String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
+
+                String scriptCommand = String.format("#!/bin/bash\n%s", command);
+
+                boolean scriptCreated = createScript(scriptCommand, scriptName);
+
+                String service = String.format(
+                                "[Unit]\nDescription=\"%s\"\n\n[Service]\nExecStart=\"%s\"",
+                                taskname, scriptPath + scriptName);
+
+                String servicePath = "/home/admin/.config/systemd/user/";
+                ProcessBuilder setService = new ProcessBuilder("bash", "-c", "echo '" + service + "' > " + serviceName);
+                setService.directory(new File(servicePath));
+                Process setServiceProcess = setService.start();
+
+                return scriptCreated && setServiceProcess.waitFor() == 0;
+        }
+
+        public boolean deleteService(Task task) throws IOException, InterruptedException {
+                String taskname = task.getTaskname();
+                String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".sh";
+                String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
+
+                ProcessBuilder deleteScript = new ProcessBuilder("bash", "-c", "rm " + scriptName);
+                deleteScript.directory(new File(scriptPath));
+                Process deleteScriptProcess = deleteScript.start();
+
+                ProcessBuilder deleteService = new ProcessBuilder("bash", "-c", "rm " + serviceName);
+                deleteService.directory(new File(servicePath));
+                Process deleteServiceProcess = deleteService.start();
+
+                return deleteScriptProcess.waitFor() == 0 && deleteServiceProcess.waitFor() == 0;
+        }
+
+        public Process executeService(String taskname) throws InterruptedException, IOException {
+                String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
+
+                ProcessBuilder executeTask = new ProcessBuilder("bash", "-c", "systemctl --user start " + serviceName);
+                executeTask.directory(new File(servicePath));
+                Process executeTaskProcess = executeTask.start();
+
+                return executeTaskProcess;
+        }
+
+        // --------------- timer related -------------------
         public boolean addServiceTimer(ScheduledTask scheduledTask) throws IOException, InterruptedException {
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 Long sId = scheduledTask.getId();
@@ -24,37 +91,20 @@ public class ServiceHandler {
                 String dateTime = dtf.format(scheduledTask.getScheduleDateTime());
 
                 String command = task.getCommand();
-                String scriptName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".sh";
-                String serviceName = (taskname.replaceAll("\\s", "")).toLowerCase() + ".service";
+                String modifiedTaskname = (taskname.replaceAll("\\s", "")).toLowerCase();
                 String timerName = (taskname.replaceAll("\\s", "")).toLowerCase() + sId + ".timer";
-
-                String scriptPath = "/home/admin/Desktop/Sakha/sakha/src/main/resources/scripts/";
 
                 String scriptCommand = String.format("#!/bin/bash\n%s", command);
 
-                ProcessBuilder createScript = new ProcessBuilder("bash", "-c",
-                                "echo '" + scriptCommand + "' > " + scriptName + " && chmod +x " + scriptName);
-                createScript.directory(new File(scriptPath));
-                Process createScriptProcess = createScript.start();
-
-                // String service = String.format(
-                //                 "[Unit]\nDescription=\"%s\"\n\n[Service]\nExecStart=\"%s\"",
-                //                 taskname, scriptPath + scriptName);
+                boolean scriptCreated = createScript(scriptCommand, modifiedTaskname);
 
                 String timer = String.format(
-                                "[Unit]\nDescription=\"%s\"\n\n[Timer]\nOnCalendar=%s\nUnit=%s\n\n[Install]\nWantedBy=multi-user.target",
-                                taskname, dateTime, serviceName);
-
-                String servicePath = "/home/admin/.config/systemd/user/";
+                                "[Unit]\nDescription=\"%s\"\n\n[Timer]\nOnCalendar=%s\nUnit=%s.service\n\n[Install]\nWantedBy=multi-user.target",
+                                taskname, dateTime, modifiedTaskname);
 
                 ProcessBuilder setTimer = new ProcessBuilder("bash", "-c", "echo '" + timer + "' > " + timerName);
                 setTimer.directory(new File(servicePath));
                 Process setTimerProcess = setTimer.start();
-
-                // ProcessBuilder setService = new ProcessBuilder("bash", "-c", "echo '" +
-                // service + "' > " + serviceName);
-                // setService.directory(new File(servicePath));
-                // Process setServiceProcess = setService.start();
 
                 ProcessBuilder reloadSystem = new ProcessBuilder("bash", "-c", "systemctl --user daemon-reload");
                 reloadSystem.directory(new File(servicePath));
@@ -64,27 +114,36 @@ public class ServiceHandler {
                 executeTimer.directory(new File(servicePath));
                 Process executeTimerProcess = executeTimer.start();
 
-                String timers = String.join(" ", getElapsedTimers());
+                return scriptCreated && setTimerProcess.waitFor() == 0 && executeTimerProcess.waitFor() == 0
+                                && reloadSystemProcess.waitFor() == 0;
+
+        }
+
+        public List<Long> deleteElapsedTimers() throws InterruptedException, IOException {
+                return deleteServiceTimer(getElapsedTimers());
+        }
+
+        public List<Long> deleteServiceTimer(String... timer) throws InterruptedException, IOException {
+
+                String timers = String.join(" ", timer);
+                System.out.println(timers);
+
                 String cleaningScript = String.format("systemctl --user stop %s\n" + //
                                 "systemctl --user disable %s\n" + //
                                 "rm /home/admin/.config/systemd/user/%s", timers, timers, timers);
 
-                ProcessBuilder cleanScript = new ProcessBuilder("bash", "-c",
-                                "echo '" + cleaningScript + "' > cleaningscript.sh && chmod +x cleaningscript.sh");
-                cleanScript.directory(new File(scriptPath));
-                Process cleanScriptProcess = cleanScript.start();
+                boolean scriptCreated = createScript(cleaningScript, "cleaningscript");
 
                 ProcessBuilder cleanTimers = new ProcessBuilder("bash", "-c", scriptPath + "cleaningscript.sh");
-                Process cleanTimersProcess = cleanTimers.start();
-
-                return createScriptProcess.waitFor() == 0
-                                && setTimerProcess.waitFor() == 0 && executeTimerProcess.waitFor() == 0
-                                && reloadSystemProcess.waitFor() == 0 && cleanScriptProcess.waitFor() == 0
-                                && cleanTimersProcess.waitFor() == 0;
-
+                cleanTimers.directory(new File(scriptPath));
+                cleanTimers.start();
+                if (scriptCreated)
+                        return Arrays.stream(timer).map(s -> (s.replaceAll("[^0-9]", ""))).map(Long::valueOf)
+                                        .collect(Collectors.toList());
+                return List.of();
         }
 
-        public static List<String> getElapsedTimers() throws IOException {
+        private static String[] getElapsedTimers() throws IOException {
                 List<String> elapsedTimers = new ArrayList<>();
 
                 // Run the `systemctl list-timers --all` command
@@ -115,6 +174,6 @@ public class ServiceHandler {
                         }
                 }
 
-                return elapsedTimers;
+                return elapsedTimers.toArray(new String[0]);
         }
 }

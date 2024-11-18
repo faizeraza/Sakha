@@ -1,443 +1,218 @@
-const chatBox = document.getElementById('chatBox');
-let conversationStep = 0;
-let taskid, fieldName, newValue;
-let task = {
-    taskname: '',
-    description: '',
-    scheduleDate: '',
-    scheduleTime: '',
-    status: ''
-};
+let currentStep = 0; // Track the current interaction step
+let taskData = {}; // Temporary storage for task details
+let currentAction = ""; // Tracks the current action (execute or schedule)
 
-const inputBox = document.getElementById("userInput");
-const btn = document.getElementById("btn");
-inputBox.addEventListener("keypress", () => {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        btn.click();
-    }
-})
-
-// Updated Changes 
-function appendMessage(content, isUser) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('chat-message', isUser ? 'user' : 'bot');
-
-    const messageContent = document.createElement('p');
-    messageContent.innerHTML = content;  // Use innerHTML to allow HTML content
-    messageDiv.appendChild(messageContent);
-
+// Add messages to chat box
+function addMessage(text, sender) {
+    const chatBox = document.getElementById("chatBox");
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message", sender);
+    messageDiv.innerHTML = `<p>${text}</p>`;
     chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;  // Automatically scroll to bottom
+    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
 }
 
-function sendMessage() {
-    const input = document.getElementById('userInput');
-    const message = input.value;
-    if (message.trim() !== "") {
-        appendMessage(message, true); // User message
-        input.value = '';
-        handleBotResponse(message);
+// Show options for executing tasks
+function showExecuteTaskOptions() {
+    addMessage("You chose to execute a task. Please choose an option:", "bot");
+    listTasks();
+}
+
+// Show options for creating a task
+function showCreateTaskOptions() {
+    addMessage("You chose to create a new task. Please provide the task details.", "bot");
+    setOptions(["Create and Execute Now", "Create and Schedule Later"]);
+    currentStep = 2;
+}
+
+// Display available options as buttons
+function setOptions(options) {
+    const chatBox = document.getElementById("chatBox");
+    const optionsDiv = document.createElement("div");
+    optionsDiv.classList.add("options");
+
+    options.forEach(option => {
+        const button = document.createElement("button");
+        button.textContent = option;
+        button.onclick = () => handleOptionSelection(option);
+        optionsDiv.appendChild(button);
+    });
+
+    chatBox.appendChild(optionsDiv);
+    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+}
+
+// Handle option selection
+function handleOptionSelection(option) {
+    if (currentStep === 1) {
+        if (option === "List tasks") {
+            listTasks();
+        } else if (option === "Execute a task") {
+            promptForTaskName("execute");
+        } else if (option === "Schedule a task") {
+            promptForTaskName("schedule");
+        }
+    } else if (currentStep === 2) {
+        if (option === "Create and Execute Now") {
+            currentAction = "execute";
+            promptForTaskDetails();
+        } else if (option === "Create and Schedule Later") {
+            currentAction = "schedule";
+            promptForTaskDetails();
+        }
     }
 }
 
-function handleKeyPress(event) {
-    if (event.key === 'Enter') {
-        sendMessage(); // Call sendMessage function when Enter is pressed
+// List tasks from the backend
+async function listTasks() {
+    try {
+        const response = await fetch('http://localhost:8080/tasks/all');
+        const tasks = await response.json();
+        let taskList = "<p>Here are the available tasks:</p>";
+        taskList += `
+            <table>
+                <tr>
+                    <th>Task Name</th>
+                    <th>Command</th>
+                    <th>Actions</th>
+                </tr>`;
+        
+        tasks.forEach(task => {
+            taskList += `
+                <tr>
+                    <td>${task.taskname}</td>
+                    <td>${task.command}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button onclick="executeTask('${task.taskname}')">Execute</button>
+                            <button onclick="scheduleTask('${task.taskname}')">Schedule</button>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+        taskList += "</table>";
+        addMessage(taskList, "bot");
+    } catch (error) {
+        addMessage("Failed to fetch tasks. Please try again later.", "bot");
     }
 }
 
-function displayOptions() {
-    appendMessage("What would you like to do?<br>1: Create a task<br>2: List all tasks<br>3: Update a task<br>4: Delete a task", false);
-    conversationStep = 0; // Reset conversation step to show options
-}
-
-function handleBotResponse(userMessage) {
-    switch (conversationStep) {
-        case 0:
-            if (userMessage === '1') {
-                appendMessage('You chose to create a task. Please provide the task name:', false);
-                conversationStep = 1; // Move to the next step (task name)
-            } else if (userMessage === '2') {
-                appendMessage('Fetching all tasks...', false);
-                listTasks(); // Call to list all tasks
-            } else if (userMessage === '3') {
-                appendMessage('Please provide the task Id to update:', false);
-                conversationStep = 10; // Move to update flow
-            } else if (userMessage === '4') {
-                appendMessage('Please provide the task Id to delete:', false);
-                conversationStep = 20; // Move to delete flow
-            } else {
-                appendMessage('Sorry, I did not understand that. Please select an option (1-4).', false);
-            }
-            break;
-
-        // Task creation steps
-        case 1:
-            task.taskname = userMessage;
-            appendMessage('Got it! Now provide a brief description for the task:', false);
-            conversationStep = 2; // Move to description input
-            break;
-
-        case 2:
-            task.description = userMessage;
-            appendMessage('Great! Now, select a date for the task (YYYY-MM-DD):', false);
-            conversationStep = 3; // Move to date input
-            break;
-
-        case 3:
-            task.scheduleDate = userMessage;
-            appendMessage('Now select a time for the task (HH:mm):', false);
-            conversationStep = 4; // Move to time input
-            break;
-
-        case 4:
-            task.scheduleTime = userMessage;
-            appendMessage('Finally, is the task complete or incomplete? (Type "Complete" or "Incomplete")', false);
-            conversationStep = 5; // Move to status input
-            break;
-
-        case 5:
-            task.status = userMessage.toLowerCase() === 'complete'; // Boolean value
-            appendMessage('Please confirm: Do you want to create this task? (yes/no)', false);
-            conversationStep = 6; // Move to task confirmation
-            break;
-
-        case 6:
-            if (userMessage.toLowerCase() === 'yes') {
-                createTask(task); // Call function to create the task
-            } else {
-                appendMessage('Task creation cancelled. ', false);
-                displayOptions(); // Show options again
-                conversationStep = 0; // Reset for next operation
-                task = {}; // Reset task data
-            }
-            break;
-
-        // Task update steps
-        case 10:
-            taskid = userMessage; // Save task name
-            appendMessage(`You want to update the task: ${taskid}. Please confirm (yes/no):`, false);
-            conversationStep = 11; // Move to task update confirmation
-            break;
-
-        case 11:
-            if (userMessage.toLowerCase() == 'yes') {
-                appendMessage('What field would you like to update ? ', false);
-                conversationStep = 12; // Move to description input step
-            } else {
-                appendMessage('Task update cancelled.', false);
-                displayOptions(); // Show options again
-                conversationStep = 0; // Reset for next operation
-            }
-            break;
-
-        case 12:
-            fieldName = userMessage;
-            appendMessage('Enter the updated Value :- ', false);
-            // updateTaskField(id,fieldName,newValue); 
-            conversationStep = 13;
-            // Now call the update function with the completed task data
-            break;
-
-        case 13:
-            newValue = userMessage; // Save the description provided by the user
-            console.log(newValue);
-            appendMessage(fieldName + ' Updated. Proceeding with task update...', false);
-            updateTask(taskid, fieldName, newValue);
-            break;
-        // Task deletion steps
-        case 20:
-            task.taskname = userMessage;
-            appendMessage(`Are you sure you want to delete the task: ${userMessage}? (yes/no)`, false);
-            conversationStep = 21; // Move to task deletion confirmation
-            break;
-
-        case 21:
-            if (userMessage.toLowerCase() === 'yes') {
-                deleteTask(task.taskname); // Call function to delete the task
-            } else {
-                appendMessage('Task deletion cancelled.', false);
-                displayOptions(); // Show options again
-                conversationStep = 0; // Reset for next operation
-            }
-            break;
-
-        default:
-            appendMessage('Sorry, something went wrong.', false);
+// Execute a task by taskname
+async function executeTask(taskname) {
+    try {
+        const response = await fetch(`http://localhost:8080/tasks/execute?taskname=${taskname}`);
+        const result = await response.text();
+        addMessage(`Task executed: ${result}`, "bot");
+    } catch (error) {
+        addMessage("Failed to execute task. Please try again.", "bot");
     }
 }
 
-// Function to create the task via AJAX
-function createTask(taskData) {
-    fetch('/tasks/create', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(taskData)
-    })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Failed to create task');
-        })
-        .then(data => {
-            appendMessage(`Task "${data.taskname}" created successfully!`, false);
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset for next operation
-            task = {}; // Reset task data
-        })
-        .catch(error => {
-            appendMessage(`Error: ${error.message}`, false);
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset conversation for next operation
-            task = {}; // Reset task data
-        });
+// Prompt user for task details
+function promptForTaskDetails() {
+    addMessage("Please provide the task name:", "bot");
+    currentStep = 3;
 }
 
-// Updates Changes [ ListTasks]
-
-function listTasks() {
-    fetch('/tasks/all')
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Failed to fetch tasks');
-        })
-        .then(data => {
-            if (data.length === 0) {
-                appendMessage('No tasks found.', false);
-            } else {
-                // Create a table element with improved styles
-                let table = `<table style="width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 1em; font-family: Arial, sans-serif; box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);">
-                                    <thead>
-                                        <tr style="background-color: #007BFF; color: white; text-align: left;">
-                                            <th style="padding: 10px;">ID</th>
-                                            <th style="padding: 10px;">Task Name</th>
-                                            <th style="padding: 15px;">Description</th>
-                                            <th style="padding: 10px;">Scheduled Time</th>
-                                            <th style="padding: 10px;">Scheduled Date</th>
-                                            <th style="padding: 10px;">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>`;
-
-                data.forEach((task, index) => {
-                    table += `<tr style="border-bottom: 1px solid #dddddd;">
-                                    <td style="padding: 10px; text-align: center;">${task.id}</td>
-                                    <td style="padding: 10px;">${task.taskname}</td>
-                                    <td style="padding: 10px;">${task.description}</td>
-                                    <td style="padding: 15px; text-align: center;">${task.scheduleTime}</td>
-                                    <td style="padding: 10px; text-align: center;">${task.scheduleDate}</td>
-                                    <td style="padding: 10px; text-align: center;">${task.status}</td>
-                                  </tr>`;
-                });
-
-                table += `</tbody></table>`;
-
-                appendMessage(table, false); // Display the task table
-            }
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset for next operation
-        })
-        .catch(error => {
-            appendMessage(`Error: ${error.message}`, false);
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset conversation for next operation
-        });
+// Handle user input for task details step-by-step
+function handleTaskDetailsInput(input) {
+    if (currentStep === 3) {
+        taskData.taskname = input;
+        addMessage("Please provide the command:", "bot");
+        currentStep = 4;
+    } else if (currentStep === 4) {
+        taskData.command = input;
+        addMessage("Please provide a description:", "bot");
+        currentStep = 5;
+    } else if (currentStep === 5) {
+        taskData.description = input;
+        if (currentAction === "execute") {
+            createAndExecuteTask();
+        } else if (currentAction === "schedule") {
+            promptForDateTime(taskData.taskname);
+        }
+    }
 }
 
-
-// Updated ListTasks Method 
-// Function to list all tasks by fetching from the backend
-function listTasks() {
-    fetch('/tasks/all')
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Failed to fetch tasks');
-        })
-        .then(data => {
-            if (data.length === 0) {
-                appendMessage('No tasks found.', false);
-            } else {
-                // Create a table element with improved styles
-                let table = `<table style="width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 1em; font-family: Arial, sans-serif; box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);">
-                                <thead>
-                                    <tr style="background-color: #007BFF; color: white; text-align: left;">
-                                        <th style="padding: 10px;">ID</th>
-                                        <th style="padding: 10px;">Task Name</th>
-                                        <th style="padding: 15px;">Description</th>
-                                        <th style="padding: 10px;">Scheduled Time</th>
-                                        <th style="padding: 10px;">Scheduled Date</th>
-                                        <th style="padding: 10px;">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
-
-                data.forEach((task) => {
-                    table += `<tr style="border-bottom: 1px solid #dddddd;">
-                                <td style="padding: 10px; text-align: center;">${task.id}</td>
-                                <td style="padding: 10px;">${task.taskname}</td>
-                                <td style="padding: 10px;">${task.description}</td>
-                                <td style="padding: 15px; text-align: center;">${task.scheduleTime}</td>
-                                <td style="padding: 10px; text-align: center;">${task.scheduleDate}</td>
-                                <td style="padding: 10px; text-align: center;">${task.status}</td>
-                              </tr>`;
-                });
-
-                table += `</tbody></table>`;
-
-                appendMessage(table, true); // Display the task table with HTML formatting
-            }
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset for next operation
-        })
-        .catch(error => {
-            appendMessage(`Error: ${error.message}`, false);
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset conversation for next operation
+// Create and execute a task
+async function createAndExecuteTask() {
+    addMessage("Creating the task...", "bot");
+    try {
+        // Step 1: Create the task
+        const createResponse = await fetch('http://localhost:8080/tasks/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData)
         });
-}
 
-
-
-
-
-
-// Function to update the task via AJAX
-// function updateTask(taskData) {
-
-//     // const fieldName = taskData.fieldName;  // Capture which field to update
-//     const fieldName = prompt("Enter your Field that you want to update :");
-//     const newValue = taskData.newValue;    // Capture the new value
-
-//     fetch(`/tasks/update/${encodeURIComponent(taskData.id)}?fieldName=${encodeURIComponent(fieldName)}&newValue=${encodeURIComponent(newValue)}`, {
-//         method: 'PUT',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         }
-//     })
-//     .then(response => {
-//         if (response.ok) {
-//             return response.json();
-//         }
-//         throw new Error('Failed to update task');
-//     })
-//     .then(data => {
-//         appendMessage(`Task updated successfully!`, false);
-//         displayOptions(); // Show options again
-//         conversationStep = 0; // Reset for next operation
-//     })
-//     .catch(error => {
-//         appendMessage(`Error: ${error.message}`, false);
-//         displayOptions(); // Show options again
-//         conversationStep = 0; // Reset conversation for next operation
-//     });
-// }
-
-
-// **Updated the UpdateTaskData **
-
-// Function to update the task via AJAX
-// Function to update a task by sending a PUT request
-function updateTask(taskid, fieldName, newValue) {
-    console.log(fieldName);
-    console.log(newValue);
-    if (['name', 'description', 'date', 'time', 'status'].includes(fieldName)) {
-
-        if (newValue) {
-            fetch(`/tasks/update/${encodeURIComponent(taskid)}?fieldName=${encodeURIComponent(fieldName)}&newValue=${encodeURIComponent(newValue)}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/text'
-                }
-            })
-                .then(response => {
-                    if (response.ok) {
-                        return response.text();
-                    }
-                    throw new Error('Failed to update task');
-                })
-                .then(data => {
-                    appendMessage(`Task updated successfully!`, false);
-                    displayOptions(); // Show options again
-                    conversationStep = 0; // Reset for next operation
-                })
-                .catch(error => {
-                    appendMessage(`Error: ${error.message}`, false);
-                    console.log(error.message)
-                    displayOptions(); // Show options again
-                    conversationStep = 0; // Reset conversation for next operation
-                });
-        } else {
-            appendMessage("New value was not provided.", false);
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset conversation for next operation
+        if (!createResponse.ok) {
+            throw new Error("Failed to create task.");
         }
 
-        // document.getElementById("user-input").removeEventListener("change", handleValueChange); // Remove listener after capturing value
-    }
-    else {
-        appendMessage('Invalid field. Please specify a valid field (name/description/date/time/status):', false);
-    }
-}
+        const createdTask = await createResponse.json();
+        addMessage(`Task "${createdTask.taskname}" created successfully. Executing now...`, "bot");
 
-// Function to delete the task via AJAX
-function deleteTask(taskName) {
-    fetch(`/tasks/delete/${encodeURIComponent(taskName)}`, {
-        method: 'DELETE',
-    })
-        .then(response => {
-            if (response.ok) {
-                appendMessage(`Task "${taskName}" deleted successfully!`, false);
-            } else {
-                throw new Error('Failed to delete task');
-            }
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset for next operation
-        })
-        .catch(error => {
-            appendMessage(`Error: ${error.message}`, false);
-            displayOptions(); // Show options again
-            conversationStep = 0; // Reset conversation for next operation
+        // Step 2: Execute the task
+        const executeResponse = await fetch(`http://localhost:8080/tasks/execute?taskname=${taskData.taskname}`, {
+            method: 'GET',
         });
-}
 
-// Updated the Delete task 
-function deleteTask(taskName) {
-    // Ask for user confirmation before deleting the task
-    const confirmDeletion = confirm(`Are you sure you want to delete the task "${taskName}"?`);
+        if (!executeResponse.ok) {
+            throw new Error("Failed to execute task.");
+        }
 
-    if (confirmDeletion) {
-        fetch(`/tasks/delete/${encodeURIComponent(taskName)}`, {
-            method: 'DELETE',
-        })
-            .then(response => {
-                if (response.ok) {
-                    appendMessage(`Task "${taskName}" deleted successfully!`, false);
-                } else {
-                    throw new Error('Failed to delete task');
-                }
-                displayOptions(); // Show options again
-                conversationStep = 0; // Reset for next operation
-            })
-            .catch(error => {
-                appendMessage(`Error: ${error.message}`, false);
-                displayOptions(); // Show options again
-                conversationStep = 0; // Reset conversation for next operation
-            });
-    } else {
-        appendMessage(`Task deletion cancelled.`, false);
-        displayOptions(); // Show options again
-        conversationStep = 0; // Reset conversation for next operation
+        const executionResult = await executeResponse.text();
+        addMessage(`Task executed successfully: ${executionResult}`, "bot");
+    } catch (error) {
+        addMessage(`Error: ${error.message}`, "bot");
+    } finally {
+        taskData = {}; // Reset task data
+        currentStep = 0; // Reset step
     }
 }
 
-function executeCommand(command) {
+// Prompt user for date and time
+function promptForDateTime(taskname) {
+    const dateInput = document.createElement("input");
+    dateInput.type = "date";
+    const timeInput = document.createElement("input");
+    timeInput.type = "time";
 
+    const scheduleButton = document.createElement("button");
+    scheduleButton.textContent = "Schedule Task";
+    scheduleButton.onclick = async () => {
+        const dateTime = `${dateInput.value} ${timeInput.value}:00`;
+        scheduleTaskWithDateTime(taskname, dateTime);
+    };
+
+    addMessage("Please select date and time:", "bot");
+    document.body.append(dateInput, timeInput, scheduleButton);
+}
+
+// Schedule a task with selected date and time
+async function scheduleTaskWithDateTime(taskname, dateTime) {
+    try {
+        await fetch('http://localhost:8080/scheduledTask/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ taskname, dateTime : dateTime, status: "pending" })
+        });
+        addMessage(`Task scheduled for ${dateTime}.`, "bot");
+    } catch (error) {
+        addMessage("Failed to schedule task. Please try again.", "bot");
+    }
+}
+
+// Handle user input
+function handleUserInput() {
+    const input = document.getElementById("userInput").value;
+    if (input.trim() !== "") {
+        addMessage(input, "user");
+        document.getElementById("userInput").value = "";
+
+        // Handle task details input
+        if (currentStep >= 3 && currentStep <= 5) {
+            handleTaskDetailsInput(input);
+        }
+    }
 }

@@ -41,7 +41,7 @@ public class TaskController {
         List<Task> taskList = taskService.getAllTasks();  // Fetch tasks from service
         model.addAttribute("tasks", taskList);  // Add task list to the model
         model.addAttribute("task", new Task());  // Add empty tasks object for form binding
-        return "home";  // This will render the home.html template
+        return "index";  // This will render the home.html template
     }
 
     // 1. Create a new task

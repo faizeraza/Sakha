@@ -1,4 +1,6 @@
 let currentStep = 0; // Track the current interaction step
+let taskData = {}; // Temporary storage for task details
+let currentAction = ""; // Tracks the current action (execute or schedule)
 
 // Add messages to chat box
 function addMessage(text, sender) {
@@ -13,8 +15,7 @@ function addMessage(text, sender) {
 // Show options for executing tasks
 function showExecuteTaskOptions() {
     addMessage("You chose to execute a task. Please choose an option:", "bot");
-    setOptions(["List tasks", "Execute a task", "Schedule a task"]);
-    currentStep = 1;
+    listTasks();
 }
 
 // Show options for creating a task
@@ -53,9 +54,11 @@ function handleOptionSelection(option) {
         }
     } else if (currentStep === 2) {
         if (option === "Create and Execute Now") {
-            promptForTaskDetails("execute");
+            currentAction = "execute";
+            promptForTaskDetails();
         } else if (option === "Create and Schedule Later") {
-            promptForTaskDetails("schedule");
+            currentAction = "schedule";
+            promptForTaskDetails();
         }
     }
 }
@@ -105,24 +108,66 @@ async function executeTask(taskname) {
     }
 }
 
-// Schedule a task by taskname
-function scheduleTask(taskname) {
-    addMessage("Please choose a date and time for scheduling.", "bot");
-    promptForDateTime(taskname);
-}
-
 // Prompt user for task details
-function promptForTaskDetails(action) {
-    addMessage("Please enter the task name, command, and description.", "bot");
+function promptForTaskDetails() {
+    addMessage("Please provide the task name:", "bot");
     currentStep = 3;
 }
 
-// Handle user input for task details
-async function handleTaskDetailsInput(taskDetails, action) {
-    if (action === "schedule") {
-        promptForDateTime(taskDetails);
-    } else {
-        await createTask(taskDetails);
+// Handle user input for task details step-by-step
+function handleTaskDetailsInput(input) {
+    if (currentStep === 3) {
+        taskData.taskname = input;
+        addMessage("Please provide the command:", "bot");
+        currentStep = 4;
+    } else if (currentStep === 4) {
+        taskData.command = input;
+        addMessage("Please provide a description:", "bot");
+        currentStep = 5;
+    } else if (currentStep === 5) {
+        taskData.description = input;
+        if (currentAction === "execute") {
+            createAndExecuteTask();
+        } else if (currentAction === "schedule") {
+            promptForDateTime(taskData.taskname);
+        }
+    }
+}
+
+// Create and execute a task
+async function createAndExecuteTask() {
+    addMessage("Creating the task...", "bot");
+    try {
+        // Step 1: Create the task
+        const createResponse = await fetch('http://localhost:8080/tasks/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData)
+        });
+
+        if (!createResponse.ok) {
+            throw new Error("Failed to create task.");
+        }
+
+        const createdTask = await createResponse.json();
+        addMessage(`Task "${createdTask.taskname}" created successfully. Executing now...`, "bot");
+
+        // Step 2: Execute the task
+        const executeResponse = await fetch(`http://localhost:8080/tasks/execute?taskname=${taskData.taskname}`, {
+            method: 'GET',
+        });
+
+        if (!executeResponse.ok) {
+            throw new Error("Failed to execute task.");
+        }
+
+        const executionResult = await executeResponse.text();
+        addMessage(`Task executed successfully: ${executionResult}`, "bot");
+    } catch (error) {
+        addMessage(`Error: ${error.message}`, "bot");
+    } finally {
+        taskData = {}; // Reset task data
+        currentStep = 0; // Reset step
     }
 }
 
@@ -164,5 +209,10 @@ function handleUserInput() {
     if (input.trim() !== "") {
         addMessage(input, "user");
         document.getElementById("userInput").value = "";
+
+        // Handle task details input
+        if (currentStep >= 3 && currentStep <= 5) {
+            handleTaskDetailsInput(input);
+        }
     }
 }

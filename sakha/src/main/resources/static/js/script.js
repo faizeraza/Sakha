@@ -63,7 +63,41 @@ function handleOptionSelection(option) {
     }
 }
 
-// List tasks from the backend
+// // List tasks from the backend
+// async function listTasks() {
+//     try {
+//         const response = await fetch('http://localhost:8080/tasks/all');
+//         const tasks = await response.json();
+//         let taskList = "<p>Here are the available tasks:</p>";
+//         taskList += `
+//             <table>
+//                 <tr>
+//                     <th>Task Name</th>
+//                     <th>Command</th>
+//                     <th>Actions</th>
+//                 </tr>`;
+        
+//         tasks.forEach(task => {
+//             taskList += `
+//                 <tr>
+//                     <td>${task.taskname}</td>
+//                     <td>${task.command}</td>
+//                     <td>
+//                         <div class="action-buttons">
+//                             <button onclick="executeTask('${task.taskname}')">Execute</button>
+//                             <button onclick="scheduleTask('${task.taskname}')">Schedule</button>
+//                         </div>
+//                     </td>
+//                 </tr>`;
+//         });
+//         taskList += "</table>";
+//         addMessage(taskList, "bot");
+//     } catch (error) {
+//         addMessage("Failed to fetch tasks. Please try again later.", "bot");
+//     }
+// }
+
+// Updated listTasks function to attach event listeners after creating buttons
 async function listTasks() {
     try {
         const response = await fetch('http://localhost:8080/tasks/all');
@@ -84,18 +118,29 @@ async function listTasks() {
                     <td>${task.command}</td>
                     <td>
                         <div class="action-buttons">
-                            <button onclick="executeTask('${task.taskname}')">Execute</button>
-                            <button onclick="scheduleTask('${task.taskname}')">Schedule</button>
+                            <button class="execute-btn" data-taskname="${task.taskname}">Execute</button>
+                            <button class="schedule-btn" data-taskname="${task.taskname}">Schedule</button>
                         </div>
                     </td>
                 </tr>`;
         });
         taskList += "</table>";
         addMessage(taskList, "bot");
+
+        // Attach event listeners for the newly created buttons
+        document.querySelectorAll(".execute-btn").forEach(button => {
+            button.onclick = () => executeTask(button.getAttribute("data-taskname"));
+        });
+
+        document.querySelectorAll(".schedule-btn").forEach(button => {
+            button.onclick = () => promptForDateTime(button.getAttribute("data-taskname"));
+        });
+
     } catch (error) {
         addMessage("Failed to fetch tasks. Please try again later.", "bot");
     }
 }
+
 
 // Execute a task by taskname
 async function executeTask(taskname) {
@@ -181,7 +226,7 @@ function promptForDateTime(taskname) {
     const scheduleButton = document.createElement("button");
     scheduleButton.textContent = "Schedule Task";
     scheduleButton.onclick = async () => {
-        const dateTime = `${dateInput.value} ${timeInput.value}:00`;
+        const dateTime = `${dateInput.value}T${timeInput.value}:00`;
         scheduleTaskWithDateTime(taskname, dateTime);
     };
 
@@ -191,6 +236,12 @@ function promptForDateTime(taskname) {
 
 // Schedule a task with selected date and time
 async function scheduleTaskWithDateTime(taskname, dateTime) {
+    console.log(`Scheduling task: ${taskname} at ${dateTime}`);
+
+    if (!dateTime.trim() || dateTime.includes("Invalid")) {
+                    addMessage("Please provide a valid date and time.", "bot");
+                    return;
+                }
     try {
         await fetch('http://localhost:8080/scheduledTask/create', {
             method: 'POST',
@@ -202,6 +253,39 @@ async function scheduleTaskWithDateTime(taskname, dateTime) {
         addMessage("Failed to schedule task. Please try again.", "bot");
     }
 }
+
+// // Schedule a task with selected date and time
+// async function scheduleTaskWithDateTime(taskname, dateTime) {
+//     try {
+//         // Ensure the dateTime value is formatted as expected
+//         console.log(`Scheduling task: ${taskname} at ${dateTime}`);
+
+//         // Validate that both date and time inputs are not empty
+//         if (!dateTime.trim() || dateTime.includes("Invalid")) {
+//             addMessage("Please provide a valid date and time.", "bot");
+//             return;
+//         }
+
+//         // Send the scheduling request to the backend
+//         const response = await fetch('http://localhost:8080/scheduledTask/create', {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify({ taskname, dateTime, status: "pending" })
+//         });
+
+//         if (!response.ok) {
+//             throw new Error("Failed to schedule the task.");
+//         }
+
+//         const result = await response.json();
+//         addMessage(`Task "${taskname}" scheduled for ${dateTime}.`, "bot");
+//         console.log(`Task scheduled successfully: ${JSON.stringify(result)}`);
+//     } catch (error) {
+//         addMessage(`Failed to schedule task. Error: ${error.message}`, "bot");
+//         console.error(error);
+//     }
+// }
+
 
 // Handle user input
 function handleUserInput() {
